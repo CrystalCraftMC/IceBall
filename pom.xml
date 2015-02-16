@@ -1,0 +1,14 @@
+name: IceBall
+main: com.crystalcraftmc.iceball.IceBall
+version: 0.1
+commands:
+   snowfight:
+      description:
+         Used to teleport to the CCMC SnowBall arena
+      usage:
+         <command>
+   snowleave:
+      description:
+         Used to leave the SnowBall arena
+      usage:
+         <command>
