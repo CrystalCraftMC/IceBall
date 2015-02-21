@@ -153,7 +153,7 @@ public class IceBallListener implements Listener {
 	@EventHandler (priority=EventPriority.LOW)
 	public void cancelTP(PlayerTeleportEvent e) {
 		if(!this.isOutsideArena(e.getPlayer(), 28, false)) {
-			if(this.isOutsideArena(e.getPlayer(), 18, false)) {
+			if(this.isOutsideArena(e.getPlayer(), 18, true)) {
 				if(!e.getPlayer().isOp()) {
 					e.getPlayer().sendMessage(ChatColor.RED + "Error; you don't have permission to" +
 							" teleport here. " + ChatColor.GREEN + "PowerTool protection.");
