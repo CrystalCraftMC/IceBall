@@ -1,14 +1,63 @@
-name: IceBall
-main: com.crystalcraftmc.iceball.IceBall
-version: 0.1
-commands:
-   snowfight:
-      description:
-         Used to teleport to the CCMC SnowBall arena
-      usage:
-         <command>
-   snowleave:
-      description:
-         Used to leave the SnowBall arena
-      usage:
-         <command>
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+
+    <groupId>com.crystalcraftmc.iceball</groupId>
+    <artifactId>IceBall</artifactId>
+    <version>0.0.1-SNAPSHOT</version>
+
+    <profiles>
+        <profile>
+            <id>com.crystalcraftmc.iceball</id>
+            <build>
+                <finalName>Ice Ball</finalName>
+                <directory>src/main/java/</directory>
+                <resources>
+                    <resource>
+                        <targetPath>.</targetPath>
+                        <filtering>true</filtering>
+                        <directory>${basedir}/src/main/resources/</directory>
+                        <includes>
+                            <include>plugin.yml</include>
+                            <include>config.yml</include>
+                        </includes>
+                    </resource>
+                </resources>
+                <plugins>
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-compiler-plugin</artifactId>
+                        <configuration>
+                            <source>1.7</source>
+                            <target>1.7</target>
+                        </configuration>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+    </profiles>
+    <repositories>
+        <repository>
+            <id>spigot-repo</id>
+            <url>https://hub.spigotmc.org/nexus/content/groups/public/</url>
+        </repository>
+    </repositories>
+    <dependencies>
+        <dependency>
+            <groupId>org.spigotmc</groupId>
+            <artifactId>spigot-api</artifactId>
+            <version>1.8-R0.1-SNAPSHOT</version>
+        </dependency>
+        <dependency>
+            <groupId>org.bukkit</groupId>
+            <artifactId>bukkit</artifactId>
+            <version>1.8-R0.1-SNAPSHOT</version>
+            <type>jar</type>
+            <scope>provided</scope>
+        </dependency>
+    </dependencies>
+
+
+</project>
