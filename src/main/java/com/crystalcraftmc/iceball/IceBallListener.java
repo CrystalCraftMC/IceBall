@@ -83,7 +83,7 @@ public class IceBallListener implements Listener {
 				p.getInventory().clear();
 				for(int i = 0; i < al.size(); i++) {
 					if(al.get(i).getName().equals(p.getName()))
-						al.get(i).reset();
+						al.remove(i);
 				}
 				this.teleportToSpawn(p);
 			}
@@ -104,7 +104,7 @@ public class IceBallListener implements Listener {
 		Player p = e.getPlayer();
 			for(int i = 0; i < al.size(); i++) {
 				if(al.get(i).getName().equals(p.getName()))
-					al.get(i).reset();
+					al.remove(i);
 			}
 		
 	}
@@ -125,7 +125,7 @@ public class IceBallListener implements Listener {
 		Player p = e.getEntity();
 		for(int i = 0; i < al.size(); i++) {
 			if(al.get(i).getName().equals(p.getName())) {
-				al.get(i).reset();
+				al.remove(i);
 			}
 		}
 	}
