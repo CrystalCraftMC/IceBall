@@ -152,7 +152,7 @@ public class IceBallListener implements Listener {
 	}
 	@EventHandler (priority=EventPriority.LOW)
 	public void cancelTP(PlayerTeleportEvent e) {
-		if(!this.isOutsideArena(e.getPlayer(), 28, false)) {
+		if(!this.isOutsideArena(e.getPlayer(), 40, false)) {
 			if(this.isOutsideArena(e.getPlayer(), 18, true)) {
 				if(!e.getPlayer().isOp()) {
 					e.getPlayer().sendMessage(ChatColor.RED + "Error; you don't have permission to" +
@@ -163,6 +163,15 @@ public class IceBallListener implements Listener {
 					e.getPlayer().sendMessage(ChatColor.GOLD + "op- granted access to tp in this zone.");
 				}
 			}
+		}
+	}
+	@EventHandler
+	public void ptProtection(PlayerInteractEvent e) {
+		if(!this.isOutsideArena(e.getPlayer(), 40, false) && !e.getPlayer().isOp() &&
+				(e.getAction() == Action.LEFT_CLICK_AIR || e.getAction() == Action.LEFT_CLICK_BLOCK)) {
+			e.getPlayer().sendMessage(ChatColor.RED + "Error; you don't have permission to" +
+					" left-click here. " + ChatColor.GREEN + "PowerTool protection.");
+			e.setCancelled(true);
 		}
 	}
 	public boolean hasBuildPermission(Player p) {
