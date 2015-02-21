@@ -184,14 +184,13 @@ public class IceBallListener implements Listener {
 		}
 		if(x > (plugin.X-constant) && x < (plugin.X+constant) &&
 				z > (plugin.Z-constant) && z < (plugin.Z+constant)) {
-			Bukkit.broadcastMessage("Proper x/z");
 			return false;
 		}
 		else {
-			if(!(x > (plugin.X-constant))) {Bukkit.broadcastMessage("x: " + x + " is not greater than: " + (plugin.X-constant));}
-			if(!(x < (plugin.X+constant))) {Bukkit.broadcastMessage("x: " + x + " is not less than: " + (plugin.X+constant));}
-			if(!(z > (plugin.Z-constant))) {Bukkit.broadcastMessage("z: " + z + " is not greater than: " + (plugin.Z-constant));}
-			if(!(z < (plugin.Z+constant))) {Bukkit.broadcastMessage("z: " + z + " is not less than: " + (plugin.Z+constant));}
+			//if(!(x > (plugin.X-constant))) {Bukkit.broadcastMessage("x: " + x + " is not greater than: " + (plugin.X-constant));}
+			//if(!(x < (plugin.X+constant))) {Bukkit.broadcastMessage("x: " + x + " is not less than: " + (plugin.X+constant));}
+			//if(!(z > (plugin.Z-constant))) {Bukkit.broadcastMessage("z: " + z + " is not greater than: " + (plugin.Z-constant));}
+			//if(!(z < (plugin.Z+constant))) {Bukkit.broadcastMessage("z: " + z + " is not less than: " + (plugin.Z+constant));}
 			return true;
 		}
 	}
@@ -275,7 +274,7 @@ public class IceBallListener implements Listener {
 								if(sn.getCustomName() != null) {
 									if(sn.getCustomName().equals("Jwood_Launcher")) {
 										this.godPunch(target);
-										Bukkit.broadcastMessage(ChatColor.RED + "Ice Ball Recognized");
+										//Bukkit.broadcastMessage(ChatColor.RED + "Ice Ball Recognized");
 									}
 								}
 								for(int i = 0; i < al.size(); i++) {
@@ -286,12 +285,12 @@ public class IceBallListener implements Listener {
 								}
 								if(existsInList) {
 									al.get(placeInList).anotherSnipe();
-									Bukkit.broadcastMessage("Player hit increase to: " +
-											String.valueOf(al.get(placeInList).getHitStreak()));
+									//Bukkit.broadcastMessage("Player hit increase to: " +
+											//String.valueOf(al.get(placeInList).getHitStreak()));
 								}
 								else {
 									al.add(new HitStreak(shooter, plugin));
-									Bukkit.broadcastMessage("Player added to hitstreak arraylist");
+									//Bukkit.broadcastMessage("Player added to hitstreak arraylist");
 								}
 								existsInList = false;
 								for(int i = 0; i < al.size(); i++) {
