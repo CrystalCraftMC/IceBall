@@ -32,7 +32,7 @@ public class AnimatePlayer {
 	public AnimatePlayer(Player p, double xVel, double zVel) {
 		this.p = p;
 		this.xVel = -xVel;
-		yVel = 11;
+		yVel = 44;
 		this.yVel = -zVel;
 		accumulator = 0;
 		tim = new Timer(10, new UpdateTim());
@@ -41,12 +41,16 @@ public class AnimatePlayer {
 	private class UpdateTim implements ActionListener {
 		public void actionPerformed(ActionEvent e) {
 			accumulator++;
-			if(accumulator > 135)
+		if(accumulator > 135)
 				tim.stop();
+			else if(accumulator > 25) {
 			p.setVelocity(new Vector(xVel, yVel, zVel));
-			xVel -= .004;
-			yVel -= .004;
-			zVel -= .004;
+				xVel -= .004;
+				yVel -= .004;
+				zVel -= .004;
+			}
+			else
+				p.setVelocity(new Vector(0, 1, 0));
 		}
 	}
 }
