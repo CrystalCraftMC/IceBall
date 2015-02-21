@@ -178,7 +178,7 @@ public class IceBallListener implements Listener {
 		int y = (int)loc.getY();
 		int z = (int)loc.getZ();
 		if(checkY) {
-			if(y < (plugin.Y+5) && y > (plugin.Y-14)) { Bukkit.broadcastMessage("Proper y");}
+			if(y < (plugin.Y+5) && y > (plugin.Y-14)) { /*Bukkit.broadcastMessage("Proper y"); */}
 			else
 				return true;
 		}
