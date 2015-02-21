@@ -28,8 +28,9 @@ public class DelayedTeleport implements Listener {
 	private IceBall plugin;
 	private boolean hasMoved;
 	private int accumulator;
+	private final Player thePlayer;
 	public DelayedTeleport(IceBall ib, Player p) {
-		final Player pp = p; //final variable needed to use in run method
+		thePlayer = p; //final variable needed for run method
 		accumulator = 0;
 		plugin = ib;
 		plugin.getServer().getPluginManager().registerEvents(this, plugin);
@@ -40,17 +41,17 @@ public class DelayedTeleport implements Listener {
 		plugin.getServer().getScheduler().scheduleSyncDelayedTask(plugin, new Runnable() {
 			public void run() {
 				if(!hasMoved) {
-					for(PotionEffect effects : pp.getActivePotionEffects())
-						pp.removePotionEffect(effects.getType());
-					Location locS = new Location(pp.getWorld(), (double)plugin.X,
+					for(PotionEffect effects : thePlayer.getActivePotionEffects())
+						thePlayer.removePotionEffect(effects.getType());
+					Location locS = new Location(thePlayer.getWorld(), (double)plugin.X,
 							(double)(plugin.Y+1), (double)plugin.Z);
 					locS.setYaw(plugin.FIGHTYAW);
 					locS.setPitch(plugin.FIGHTPITCH);
-					pp.teleport(locS);
-					pp.sendMessage(ChatColor.GOLD + "Welcome to the" + ChatColor.AQUA +
+					thePlayer.teleport(locS);
+					thePlayer.sendMessage(ChatColor.GOLD + "Welcome to the" + ChatColor.AQUA +
 							" CCMC " + ChatColor.GOLD + "SnowBall Arena!");
-					pp.sendMessage(ChatColor.RED + "Note that commands have been disabled here.");
-					pp.sendMessage(ChatColor.RED + "Type " + ChatColor.BOLD + "/snowleave" +
+					thePlayer.sendMessage(ChatColor.RED + "Note that commands have been disabled here.");
+					thePlayer.sendMessage(ChatColor.RED + "Type " + ChatColor.BOLD + "/snowleave" +
 							ChatColor.RED + "  to leave the arena.");
 				}
 			}
@@ -58,11 +59,13 @@ public class DelayedTeleport implements Listener {
 	}
 	@EventHandler
 	public void moveEvent(PlayerMoveEvent e) {
-		hasMoved = true;
-		accumulator++;
-		if(accumulator == 1)
-			e.getPlayer().sendMessage(ChatColor.RED + "Teleport cancelled due to your movement.");
-		if(accumulator > 100)
-			accumulator = 10;
+		if(e.getPlayer().getName().equals(thePlayer.getName())) {
+			hasMoved = true;
+			accumulator++;
+			if(accumulator == 1)
+				e.getPlayer().sendMessage(ChatColor.RED + "Teleport cancelled due to your movement.");
+			if(accumulator > 100)
+				accumulator = 10;
+		}
 	}
 }
