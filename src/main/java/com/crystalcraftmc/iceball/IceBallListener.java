@@ -319,7 +319,7 @@ public class IceBallListener implements Listener {
 								existsInList = false;
 								for(int i = 0; i < al.size(); i++) {
 									if(al.get(i).getName().equals(target.getName())) {
-											//al.get(i).setHitStreak(0);
+											al.get(i).setHitStreak(0);
 									}
 								}
 							}
