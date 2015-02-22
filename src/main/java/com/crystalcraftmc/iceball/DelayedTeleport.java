@@ -48,6 +48,7 @@ public class DelayedTeleport implements Listener {
 					locS.setYaw(plugin.FIGHTYAW);
 					locS.setPitch(plugin.FIGHTPITCH);
 					thePlayer.teleport(locS);
+					thePlayer.getInventory().clear();
 					thePlayer.sendMessage(ChatColor.GOLD + "Welcome to the" + ChatColor.AQUA +
 							" CCMC " + ChatColor.GOLD + "SnowBall Arena!");
 					thePlayer.sendMessage(ChatColor.RED + "Note that commands have been disabled here.");
