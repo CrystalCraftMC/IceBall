@@ -41,7 +41,7 @@ public class AnimatePlayer {
 	private class UpdateTim implements ActionListener {
 		public void actionPerformed(ActionEvent e) {
 			accumulator++;
-		if(accumulator > 135)
+			if(accumulator > 135)
 				tim.stop();
 			else if(accumulator > 25) {
 			p.setVelocity(new Vector(xVel, yVel, zVel));
