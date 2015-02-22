@@ -64,7 +64,8 @@ public class IceBallListener implements Listener {
 	@EventHandler (priority=EventPriority.LOWEST)
 	public void stopCommands(PlayerCommandPreprocessEvent e) {
 		Player p = e.getPlayer();
-		if(e.getMessage().equalsIgnoreCase("/snowfight")) {
+		if(e.getMessage().equalsIgnoreCase("/snowfight") && 
+				e.getPlayer().getWorld().getEnvironment() == Environment.NORMAL) {
 			if(!this.isOutsideArena(p, 33, false)) {
 				p.sendMessage(ChatColor.RED + "Error; you must be off the snowball-arena's premises " +
 							"to use /snowfight");
@@ -79,7 +80,8 @@ public class IceBallListener implements Listener {
 				}
 			}
 		}
-		else if(e.getMessage().equalsIgnoreCase("/snowleave")) {
+		else if(e.getMessage().equalsIgnoreCase("/snowleave") &&
+				e.getPlayer().getWorld().getEnvironment() == Environment.NORMAL) {
 			if(!this.isOutsideArena(p, 19, true)) {
 				p.getInventory().clear();
 				for(int i = 0; i < al.size(); i++) {
