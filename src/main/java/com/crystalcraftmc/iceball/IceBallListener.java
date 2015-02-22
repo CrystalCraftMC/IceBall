@@ -18,7 +18,6 @@
 
 import java.util.ArrayList;
 
-import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.Location;
 import org.bukkit.Material;
@@ -28,6 +27,7 @@ import org.bukkit.entity.Snowball;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
+import org.bukkit.event.block.Action;
 import org.bukkit.event.block.BlockBreakEvent;
 import org.bukkit.event.block.BlockPlaceEvent;
 import org.bukkit.event.entity.EntityDamageByEntityEvent;
@@ -249,6 +249,7 @@ public class IceBallListener implements Listener {
 			}
 		}
 	}
+	
 	@EventHandler
 	public void noPvp(EntityDamageByEntityEvent e) {
 		if(e.getEntity() instanceof Player) {
@@ -305,7 +306,7 @@ public class IceBallListener implements Listener {
 								existsInList = false;
 								for(int i = 0; i < al.size(); i++) {
 									if(al.get(i).getName().equals(target.getName())) {
-											al.get(i).setHitStreak(0);
+											//al.get(i).setHitStreak(0);
 									}
 								}
 							}
