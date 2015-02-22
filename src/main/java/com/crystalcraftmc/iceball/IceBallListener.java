@@ -80,7 +80,7 @@ public class IceBallListener implements Listener {
 			}
 		}
 		else if(e.getMessage().equalsIgnoreCase("/snowleave")) {
-			if(!this.isOutsideArena(p, 21, true)) {
+			if(!this.isOutsideArena(p, 19, true)) {
 				p.getInventory().clear();
 				for(int i = 0; i < al.size(); i++) {
 					if(al.get(i).getName().equals(p.getName()))
