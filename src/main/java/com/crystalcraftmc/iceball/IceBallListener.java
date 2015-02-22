@@ -21,6 +21,7 @@ import java.util.ArrayList;
 import org.bukkit.ChatColor;
 import org.bukkit.Location;
 import org.bukkit.Material;
+import org.bukkit.World.Environment;
 import org.bukkit.enchantments.Enchantment;
 import org.bukkit.entity.Player;
 import org.bukkit.entity.Snowball;
@@ -114,7 +115,7 @@ public class IceBallListener implements Listener {
 	@EventHandler
 	public void cancelBlockPlace(BlockPlaceEvent e) {
 		Player p = e.getPlayer();
-		if(!this.isOutsideArena(p, 33, false)) {
+		if(!this.isOutsideArena(p, 33, false) && e.getPlayer().getWorld().getEnvironment() == Environment.NORMAL) {
 			if(p.isOp() || this.hasBuildPermission(p)) {}
 			else {
 				e.getPlayer().sendMessage(ChatColor.GOLD + "You do not have permission to place a block" +
@@ -136,7 +137,7 @@ public class IceBallListener implements Listener {
 	public void noFallDeath(EntityDamageEvent e) {
 		if(e.getEntity() instanceof Player) {
 			Player p = (Player)e.getEntity();
-			if(!this.isOutsideArena(p, 18, true)) {
+			if(!this.isOutsideArena(p, 18, true) && p.getWorld().getEnvironment() == Environment.NORMAL) {
 				if(e.getCause().equals(DamageCause.FALL))
 					e.setCancelled(true);
 			}
@@ -148,14 +149,17 @@ public class IceBallListener implements Listener {
 		if(!this.isOutsideArena(p, 33, false)) {
 			if(p.isOp() || this.hasBuildPermission(p)) {}
 			else {
-				e.getPlayer().sendMessage(ChatColor.GOLD + "You do not have permission to break that.");
-				e.setCancelled(true);
+				if(e.getPlayer().getWorld().getEnvironment() == Environment.NORMAL) {
+					e.getPlayer().sendMessage(ChatColor.GOLD + "You do not have permission to break that.");
+					e.setCancelled(true);
+				}
 			}
 		}
 	}
 	@EventHandler (priority=EventPriority.LOW)
 	public void cancelTP(PlayerTeleportEvent e) {
-		if(!this.isOutsideArena(e.getPlayer(), 40, false)) {
+		if(!this.isOutsideArena(e.getPlayer(), 40, false) &&
+				e.getPlayer().getWorld().getEnvironment() == Environment.NORMAL) {
 			if(this.isOutsideArena(e.getPlayer(), 18, true)) {
 				if(!e.getPlayer().isOp()) {
 					e.getPlayer().sendMessage(ChatColor.RED + "Error; you don't have permission to" +
@@ -172,9 +176,11 @@ public class IceBallListener implements Listener {
 	public void ptProtection(PlayerInteractEvent e) {
 		if(!this.isOutsideArena(e.getPlayer(), 40, false) && !e.getPlayer().isOp() &&
 				(e.getAction() == Action.LEFT_CLICK_AIR || e.getAction() == Action.LEFT_CLICK_BLOCK)) {
-			e.getPlayer().sendMessage(ChatColor.RED + "Error; you don't have permission to" +
+			if(e.getPlayer().getWorld().getEnvironment() == Environment.NORMAL) {
+				e.getPlayer().sendMessage(ChatColor.RED + "Error; you don't have permission to" +
 					" left-click here. " + ChatColor.GREEN + "PowerTool protection.");
-			e.setCancelled(true);
+				e.setCancelled(true);
+			}
 		}
 	}
 	public boolean hasBuildPermission(Player p) {
@@ -186,6 +192,8 @@ public class IceBallListener implements Listener {
 	}
 	public boolean isOutsideArena(Player p, int constant, boolean checkY) {
 		Location loc = p.getLocation();
+		if(loc.getWorld().getEnvironment() != Environment.NORMAL)
+			return true;
 		int x = (int)loc.getX();
 		int y = (int)loc.getY();
 		int z = (int)loc.getZ();
@@ -223,7 +231,7 @@ public class IceBallListener implements Listener {
 			return true;
 		}
 	}
-	public void teleportToSpawn(Player p) {
+	public void teleportToSpawn(Player p) { //only called from /snowleave which already checks overworld
 		Location locSpawn = new Location(p.getWorld(), (double)plugin.SPAWNX,
 				(double)plugin.SPAWNY, (double)plugin.SPAWNZ);
 		locSpawn.setYaw((float)-90);
@@ -231,6 +239,8 @@ public class IceBallListener implements Listener {
 		p.teleport(locSpawn);
 	}
 	public boolean inSnowballRange(Location loc) {
+		if(loc.getWorld().getEnvironment() != Environment.NORMAL)
+			return false;
 		if((int)loc.getX() > (plugin.X-18) && (int)loc.getX() < (plugin.X+18)) {
 			if((int)loc.getZ() > (plugin.Z-18) && (int)loc.getZ() < (plugin.Z+18)) {
 				if((int)loc.getY() > (plugin.Y-14) && (int)loc.getY() < (plugin.Y+5)) {
@@ -257,10 +267,11 @@ public class IceBallListener implements Listener {
 		if(e.getEntity() instanceof Player) {
 			Location loc = e.getEntity().getLocation();
 			if(e.getDamage() > 0) {
-				e.setCancelled(this.inSnowballRange(loc));
+				e.setCancelled(this.inSnowballRange(loc)); //snowball range checks for overworld
 			}
 			else {
-				if(this.inSnowballRange(loc) && e.getDamager() instanceof Snowball) {
+				if(this.inSnowballRange(loc) && e.getDamager() instanceof Snowball &&
+						loc.getWorld().getEnvironment() == Environment.NORMAL) {
 					Snowball sn = (Snowball)e.getDamager();
 					
 					if(sn.getShooter() instanceof Player) {
@@ -308,7 +319,7 @@ public class IceBallListener implements Listener {
 								existsInList = false;
 								for(int i = 0; i < al.size(); i++) {
 									if(al.get(i).getName().equals(target.getName())) {
-											al.get(i).setHitStreak(0);
+											//al.get(i).setHitStreak(0);
 									}
 								}
 							}
