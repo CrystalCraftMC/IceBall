@@ -15,7 +15,7 @@
  */
 
 package com.crystalcraftmc.iceball;
-//
+
 import org.bukkit.ChatColor;
 import org.bukkit.Location;
 import org.bukkit.entity.Player;
@@ -29,7 +29,9 @@ public class DelayedTeleport implements Listener {
 	private boolean hasMoved;
 	private int accumulator;
 	private final Player thePlayer;
+	private long startTime;
 	public DelayedTeleport(IceBall ib, Player p) {
+		startTime = System.currentTimeMillis();
 		thePlayer = p; //final variable needed for run method
 		accumulator = 0;
 		plugin = ib;
@@ -60,10 +62,11 @@ public class DelayedTeleport implements Listener {
 	}
 	@EventHandler
 	public void moveEvent(PlayerMoveEvent e) {
-		if(e.getPlayer().getName().equals(thePlayer.getName())) {
-			hasMoved = true;
+		if(e.getPlayer().getName().equals(thePlayer.getName()) &&
+				(System.currentTimeMillis()-startTime) <= 5500) {
+			hasMoved = true; //extra half-second for safety
 			accumulator++;
-			if(accumulator == 1)
+			if(accumulator == 1 && (System.currentTimeMillis()-startTime) <= 4900)
 				e.getPlayer().sendMessage(ChatColor.RED + "Teleport cancelled due to your movement.");
 			if(accumulator > 100)
 				accumulator = 10;
