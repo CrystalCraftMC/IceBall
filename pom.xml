@@ -6,13 +6,13 @@
 
     <groupId>com.crystalcraftmc.iceball</groupId>
     <artifactId>IceBall</artifactId>
-    <version>0.0.1-SNAPSHOT</version>
+    <version>0.0.2-SNAPSHOT</version>
 
     <profiles>
         <profile>
             <id>com.crystalcraftmc.iceball</id>
             <build>
-                <finalName>Ice Ball</finalName>
+                <finalName>IceBall</finalName>
                 <directory>src/main/java/</directory>
                 <resources>
                     <resource>
