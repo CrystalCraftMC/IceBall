@@ -22,6 +22,7 @@ import org.bukkit.entity.Player;
 import org.bukkit.plugin.java.JavaPlugin;
 
 public class IceBall extends JavaPlugin {
+	//TEAM RED/PURPLE MUST BE TOWARDS THE WEST FROM /SNOWFIGHT LOC PERSPECTIVE
 	public final int X = -1;
 	public final int Y = 73;
 	public final int Z = -384;
@@ -49,4 +50,3 @@ public class IceBall extends JavaPlugin {
 		return false;
 	}
 }
-//
