@@ -29,12 +29,14 @@ public class AnimatePlayer {
 	private double xVel, zVel, yVel;
 	private Timer tim;
 	private int accumulator;
-	public AnimatePlayer(Player p, double xVel, double zVel) {
+	private IceBall plugin;
+	public AnimatePlayer(Player p, double xVel, double zVel, IceBall plugin) {
 		this.p = p;
 		this.xVel = -xVel;
 		yVel = 44;
 		this.yVel = -zVel;
 		accumulator = 0;
+		this.plugin = plugin;
 		tim = new Timer(10, new UpdateTim());
 		tim.start();
 	}
@@ -49,8 +51,11 @@ public class AnimatePlayer {
 				yVel -= .004;
 				zVel -= .004;
 			}
-			else
-				p.setVelocity(new Vector(0, 1, 0));
+			else {
+				if(p.getLocation().getY() < plugin.Y-1) {
+					p.setVelocity(new Vector(0, 1, 0));
+				}
+			}
 		}
 	}
 }
