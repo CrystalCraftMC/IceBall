@@ -19,12 +19,17 @@
 import java.util.ArrayList;
 
 import org.bukkit.ChatColor;
+import org.bukkit.Color;
+import org.bukkit.FireworkEffect;
 import org.bukkit.Location;
 import org.bukkit.Material;
+import org.bukkit.FireworkEffect.Type;
 import org.bukkit.World.Environment;
+import org.bukkit.block.Block;
 import org.bukkit.enchantments.Enchantment;
 import org.bukkit.entity.Player;
 import org.bukkit.entity.Snowball;
+import org.bukkit.entity.Wolf;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
@@ -41,13 +46,19 @@ import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.event.player.PlayerLoginEvent;
 import org.bukkit.event.player.PlayerTeleportEvent;
 import org.bukkit.inventory.ItemStack;
+import org.bukkit.inventory.meta.FireworkMeta;
 import org.bukkit.inventory.meta.ItemMeta;
+import org.bukkit.potion.PotionEffect;
+import org.bukkit.potion.PotionEffectType;
 
 public class IceBallListener implements Listener {
 	private IceBall plugin;
 	private String[] nonOpBuildPerms = {"todd5747"}; //will add Jwood and Teth after testing 4 testing
 	private ArrayList<HitStreak> al = new ArrayList<HitStreak>();
 	private ItemStack officialIceBall;
+	private ItemStack witchBomb;
+	private ItemStack hungerRune;
+	private ItemStack sorcerorBomb;
 	public IceBallListener(IceBall ib) {
 		plugin = ib;
 		plugin.getServer().getPluginManager().registerEvents(this, plugin);
@@ -61,12 +72,17 @@ public class IceBallListener implements Listener {
 		alLore.add(ChatColor.GOLD + "Plastic Beach");
 		im.setLore(alLore);
 		officialIceBall.setItemMeta(im);
+		this.createWitchBomb();
+		this.createSorcerorBomb();
+		hungerRune = new ItemStack(Material.FLINT_AND_STEEL, 1);
+		
 	}
 	@EventHandler (priority=EventPriority.LOWEST)
 	public void stopCommands(PlayerCommandPreprocessEvent e) {
 		Player p = e.getPlayer();
 		if(e.getMessage().equalsIgnoreCase("/snowfight") && 
 				e.getPlayer().getWorld().getEnvironment() == Environment.NORMAL) {
+			
 			if(!this.isOutsideArena(p, 33, false)) {
 				p.sendMessage(ChatColor.RED + "Error; you must be off the snowball-arena's premises " +
 							"to use /snowfight");
@@ -81,6 +97,11 @@ public class IceBallListener implements Listener {
 				}
 			}
 		}
+		else if(e.getMessage().equalsIgnoreCase("/snowfight") && 
+				e.getPlayer().getWorld().getEnvironment() != Environment.NORMAL) {
+			e.getPlayer().sendMessage(ChatColor.AQUA + "Error; you must be in the" +
+				" overworld to use command " + ChatColor.GOLD + "\"snowfight\"" + ChatColor.AQUA + ".");
+		}
 		else if(e.getMessage().equalsIgnoreCase("/snowleave") &&
 				e.getPlayer().getWorld().getEnvironment() == Environment.NORMAL) {
 			if(!this.isOutsideArena(p, 19, true)) {
@@ -89,6 +110,7 @@ public class IceBallListener implements Listener {
 					if(al.get(i).getName().equals(p.getName()))
 						al.remove(i);
 				}
+				this.clearPotions(p);
 				this.teleportToSpawn(p);
 			}
 			else {
@@ -103,14 +125,51 @@ public class IceBallListener implements Listener {
 			e.setCancelled(true);
 		}
 	}
-	@EventHandler
+	@EventHandler (priority= EventPriority.LOWEST)
 	public void resetStatsOnLogIn(PlayerLoginEvent e) {
 		Player p = e.getPlayer();
 			for(int i = 0; i < al.size(); i++) {
 				if(al.get(i).getName().equals(p.getName()))
 					al.remove(i);
+				
 			}
-		
+		if(p.getWorld().getEnvironment() == Environment.NORMAL) {
+			final Player pu = p;
+			plugin.getServer().getScheduler().scheduleSyncDelayedTask(plugin, new Runnable() {
+				public void run() {
+					if(!this.isOutsideArena(pu, 20, true)) {
+						pu.setHealth(0);
+						pu.sendMessage(ChatColor.GOLD + "Logging in inside the arena will result in death." +
+								ChatColor.AQUA + " -J");
+					}
+				}
+				public boolean isOutsideArena(Player p, int constant, boolean checkY) {
+					Location loc = p.getLocation();
+					if(loc.getWorld().getEnvironment() != Environment.NORMAL)
+						return true;
+					int x = (int)loc.getX();
+					int y = (int)loc.getY();
+					int z = (int)loc.getZ();
+					if(checkY) {
+						if(y < (plugin.Y+5) && y > (plugin.Y-14)) { /*Bukkit.broadcastMessage("Proper y"); */}
+						else
+							return true;
+					}
+					if(x > (plugin.X-constant) && x < (plugin.X+constant) &&
+							z > (plugin.Z-constant) && z < (plugin.Z+constant)) {
+						return false;
+					}
+					else {
+						//if(!(x > (plugin.X-constant))) {Bukkit.broadcastMessage("x: " + x + " is not greater than: " + (plugin.X-constant));}
+						//if(!(x < (plugin.X+constant))) {Bukkit.broadcastMessage("x: " + x + " is not less than: " + (plugin.X+constant));}
+						//if(!(z > (plugin.Z-constant))) {Bukkit.broadcastMessage("z: " + z + " is not greater than: " + (plugin.Z-constant));}
+						//if(!(z < (plugin.Z+constant))) {Bukkit.broadcastMessage("z: " + z + " is not less than: " + (plugin.Z+constant));}
+						return true;
+					}
+				}
+			}, 5L);
+			
+		}
 	}
 	@EventHandler
 	public void cancelBlockPlace(BlockPlaceEvent e) {
@@ -172,17 +231,7 @@ public class IceBallListener implements Listener {
 			}
 		}
 	}
-	@EventHandler
-	public void ptProtection(PlayerInteractEvent e) {
-		if(!this.isOutsideArena(e.getPlayer(), 40, false) && !e.getPlayer().isOp() &&
-				(e.getAction() == Action.LEFT_CLICK_AIR || e.getAction() == Action.LEFT_CLICK_BLOCK)) {
-			if(e.getPlayer().getWorld().getEnvironment() == Environment.NORMAL) {
-				e.getPlayer().sendMessage(ChatColor.RED + "Error; you don't have permission to" +
-					" left-click here. " + ChatColor.GREEN + "PowerTool protection.");
-				e.setCancelled(true);
-			}
-		}
-	}
+	
 	public boolean hasBuildPermission(Player p) {
 		for(String name : nonOpBuildPerms) {
 			if(name.equalsIgnoreCase(p.getName()))
@@ -231,7 +280,8 @@ public class IceBallListener implements Listener {
 			return true;
 		}
 	}
-	public void teleportToSpawn(Player p) { //only called from /snowleave which already checks overworld
+	public void teleportToSpawn(Player p) { //only called from /snowleave & reset on log in
+		//									which already checks overworld
 		Location locSpawn = new Location(p.getWorld(), (double)plugin.SPAWNX,
 				(double)plugin.SPAWNY, (double)plugin.SPAWNZ);
 		locSpawn.setYaw((float)-90);
@@ -261,13 +311,167 @@ public class IceBallListener implements Listener {
 			}
 		}
 	}
-	
+	@EventHandler
+	public void registerTeamAndWeaponDetection(PlayerInteractEvent e) {
+		if(e.getAction() == Action.PHYSICAL) {
+			Player p = e.getPlayer();
+			if(!this.isOutsideArena(p, 20, true)) { //checks Environment == NORMAL
+				Location ploc = e.getClickedBlock().getLocation();
+				String whatTeam = "red";
+				if(ploc.getX() == (plugin.X-15) && ploc.getZ() == (plugin.Z-15) &&
+						ploc.getY() == (plugin.Y+1)) {
+					whatTeam = "red";
+					//the messages are handled in-game via command blocks.
+					//p.sendMessage(ChatColor.RED + "Welcome To The Rogues Team!  Well-balanced Hit-Streaks.");
+					Location tp2 = new Location(p.getWorld(), (plugin.X-14.5), (plugin.Y-3), (plugin.Z-14.5));
+					tp2.setYaw(-45f);
+					tp2.setPitch(15f);
+					p.teleport(tp2);
+				}
+				else if(ploc.getX() == (plugin.X-15) && ploc.getZ() == (plugin.Z+15) &&
+						ploc.getY() == (plugin.Y+1)) {
+					whatTeam = "purple";
+					//p.sendMessage(ChatColor.LIGHT_PURPLE + "Welcome To The Witch Team!  For Potion Addicts.");
+					Location tp2 = new Location(p.getWorld(), (plugin.X-14.5), (plugin.Y-3), (plugin.Z+14.5));
+					tp2.setYaw(-135f);
+					tp2.setPitch(15f);
+					p.teleport(tp2);
+				}
+				else if(ploc.getX() == (plugin.X+15) && ploc.getZ() == (plugin.Z+15) &&
+						ploc.getY() == (plugin.Y+1)) {
+					whatTeam = "blue";
+					/*p.sendMessage(ChatColor.AQUA + "Welcome To The Sorcerors Team!" + ChatColor.GOLD +
+							"  For the Mystics " + ChatColor.MAGIC + "&" + ChatColor.GOLD + " Sages.");*/
+					Location tp2 = new Location(p.getWorld(), (plugin.X+14.5), (plugin.Y-3), (plugin.Z+14.5));
+					tp2.setYaw(135f);
+					tp2.setPitch(15f);
+					p.teleport(tp2);
+				}
+				else if(ploc.getX() == (plugin.X+15) && ploc.getZ() == (plugin.Z-15) &&
+						ploc.getY() == (plugin.Y+1)) {
+					whatTeam = "green";
+					/*p.sendMessage(ChatColor.GOLD + "Welcome To Team Clown!" + ChatColor.GREEN +
+							"This Class " +
+							"Makes the" + ChatColor.DARK_RED + " Joker " + ChatColor.GREEN + "Look Tame.");*/
+					Location tp2 = new Location(p.getWorld(), (plugin.X+14.5), (plugin.Y-3), (plugin.Z-14.5));
+					tp2.setYaw(45f);
+					tp2.setPitch(15f);
+					p.teleport(tp2);
+				}
+				boolean existsInList = false;
+				int placeInList = -1;
+				for(int i = 0; i < al.size() && placeInList == -1; i++) {
+					if(p.getName().equals(al.get(i).getName())) {
+						existsInList = true;
+						placeInList = i;
+					}
+				}
+				if(existsInList) {
+					al.get(placeInList).setTeam(whatTeam);
+				}
+				else {
+					al.add(new HitStreak(p, plugin, whatTeam, this));
+				}
+			}
+		}
+		else if((e.getAction() == Action.RIGHT_CLICK_BLOCK || e.getAction() == Action.RIGHT_CLICK_AIR) &&
+				e.getPlayer().getInventory().getItemInHand().getType() == Material.STICK) {
+			ItemStack lli = e.getPlayer().getInventory().getItemInHand();
+			int amountRune = lli.getAmount();
+			lli.setAmount(amountRune-1);
+			e.getPlayer().getInventory().setItemInHand(lli);
+			new Leviosa(e.getPlayer(), plugin);
+		}
+		else if(e.getAction() == Action.RIGHT_CLICK_BLOCK && !this.isOutsideArena(e.getPlayer(), 20, true)) {
+			if(e.getPlayer().getItemInHand().isSimilar(witchBomb)) {
+				if(e.getPlayer().getItemInHand().containsEnchantment(Enchantment.LURE)) {
+					Block clicked = e.getClickedBlock();
+					Location loc = clicked.getLocation();
+					ArrayList<Player> players = new ArrayList<Player>(plugin.getServer().getOnlinePlayers());
+					for(int i = 0; i < players.size(); i++) {
+						if(!this.isOutsideArena(players.get(i), 19, true)) {
+							Location l0 = players.get(i).getLocation();
+							if(this.within10BlockCube(loc, l0)) {//wont effect spectator area
+								final Player pblind = players.get(i);
+								final Player pblindShooter = e.getPlayer();
+								if(!pblindShooter.getName().equals(pblind.getName())) {
+									plugin.getServer().getScheduler().scheduleSyncDelayedTask(plugin, new Runnable() {
+										public void run() {
+											pblind.addPotionEffect(new PotionEffect(PotionEffectType.BLINDNESS, 200, 5));
+											pblind.sendMessage(ChatColor.AQUA + "You've been hit by " +
+												ChatColor.GOLD + pblindShooter.getName() + "\'s " + ChatColor.AQUA +
+													"Blindness bomb!  You're blinded for " + ChatColor.RED + "10" +
+													ChatColor.AQUA + " seconds.");
+										}
+									}, 40L);
+								}
+							}
+						}
+					}
+				}
+			}
+			else if(e.getPlayer().getItemInHand().isSimilar(sorcerorBomb)) {
+				if(e.getPlayer().getItemInHand().containsEnchantment(Enchantment.ARROW_FIRE)) {
+					Block clicked = e.getClickedBlock();
+					Location loc = clicked.getLocation();
+					ArrayList<Player> players = new ArrayList<Player>(plugin.getServer().getOnlinePlayers());
+					for(int i = 0; i < players.size(); i++) {
+						if(!this.isOutsideArena(players.get(i), 19, true)) {
+							Location l0 = players.get(i).getLocation();
+							if(this.within10BlockCube(loc, l0)) {//wont effect spectator area
+								final Player pblind = players.get(i);
+								final Player pblindShooter = e.getPlayer();
+								if(!pblindShooter.getName().equals(pblind.getName())) {
+									plugin.getServer().getScheduler().scheduleSyncDelayedTask(plugin, new Runnable() {
+										public void run() {
+											pblind.addPotionEffect(new PotionEffect(PotionEffectType.SLOW, 240, 4));
+											pblind.sendMessage(ChatColor.AQUA + "You've been hit by " +
+													ChatColor.GOLD + pblindShooter.getName() + "\'s " + ChatColor.AQUA +
+													"Slow-Mo bomb!  You're in slow-mo for " + ChatColor.RED + "12" +
+													ChatColor.AQUA + " seconds.");
+										}
+									}, 40L);
+								}
+							}
+						}
+					}
+				}
+			}
+			else if(e.getPlayer().getItemInHand().isSimilar(hungerRune)) {
+				e.setCancelled(true);
+				ItemStack lli = e.getPlayer().getInventory().getItemInHand();
+				int amountRune = lli.getAmount();
+				lli.setAmount(amountRune-1);
+				e.getPlayer().getInventory().setItemInHand(lli);
+				this.hungerBomb(e.getPlayer(), e.getClickedBlock());
+			}
+		}
+	}
+	public boolean within10BlockCube(Location base, Location test) {
+		if(test.getY() >= plugin.Y-1)
+			return false;
+		double xDist = Math.abs(base.getX()-test.getX());
+		double zDist = Math.abs(base.getX()-test.getX());
+		if(xDist < 10 && zDist < 10)
+			return true;
+		else
+			return false;
+	}
 	@EventHandler
 	public void noPvp(EntityDamageByEntityEvent e) {
 		if(e.getEntity() instanceof Player) {
 			Location loc = e.getEntity().getLocation();
 			if(e.getDamage() > 0) {
 				e.setCancelled(this.inSnowballRange(loc)); //snowball range checks for overworld
+			}
+			if(e.getDamager() instanceof Wolf && !this.isOutsideArena(((Player)e.getEntity()), 20, true)) {
+				Player chompee = (Player)e.getEntity();
+				chompee.sendMessage(ChatColor.BOLD + e.getDamager().getCustomName() +
+						ChatColor.YELLOW + " Took a Chunk Out Of You. This Causes " + ChatColor.GREEN +
+						"Nausia " + ChatColor.YELLOW + "and " + ChatColor.GREEN + "Hunger" +
+						ChatColor.YELLOW + ".");
+				chompee.addPotionEffect(new PotionEffect(PotionEffectType.CONFUSION, 200, 1));
+				chompee.addPotionEffect(new PotionEffect(PotionEffectType.HUNGER, 300, 2));
 			}
 			else {
 				if(this.inSnowballRange(loc) && e.getDamager() instanceof Snowball &&
@@ -309,12 +513,6 @@ public class IceBallListener implements Listener {
 								}
 								if(existsInList) {
 									al.get(placeInList).anotherSnipe();
-									//Bukkit.broadcastMessage("Player hit increase to: " +
-											//String.valueOf(al.get(placeInList).getHitStreak()));
-								}
-								else {
-									al.add(new HitStreak(shooter, plugin));
-									//Bukkit.broadcastMessage("Player added to hitstreak arraylist");
 								}
 								existsInList = false;
 								for(int i = 0; i < al.size(); i++) {
@@ -323,6 +521,13 @@ public class IceBallListener implements Listener {
 									}
 								}
 							}
+						}
+					}
+					else {
+						for(int i = 0; i < al.size(); i++) {
+							if(al.get(i).getName().equals(e.getEntity().getName()))
+								al.get(i).setHitStreak(0);
+							
 						}
 					}
 				}
@@ -353,8 +558,107 @@ public class IceBallListener implements Listener {
 		final double zVelFin = zVel;
 		plugin.getServer().getScheduler().scheduleSyncDelayedTask(plugin, new Runnable() {
 			public void run() {
-				new AnimatePlayer(p7, xVelFin, zVelFin);
+				new AnimatePlayer(p7, xVelFin, zVelFin, plugin);
 			}
 		}, (long)1);
+	}
+	public void clearPotions(Player p) {
+		for(PotionEffect effects : p.getActivePotionEffects())
+			p.removePotionEffect(effects.getType());
+	}
+	public void hungerBomb(Player p, Block b) {
+		final Player ppp = p;
+		final Block bbb = b;
+		plugin.getServer().getScheduler().scheduleSyncDelayedTask(plugin, new Runnable() {
+			public void run() {
+				ArrayList<Player> players = new ArrayList<Player>(plugin.getServer().getOnlinePlayers());
+				for(int i = 0; i < players.size(); i++) {
+					if(!this.isOutsideArena(players.get(i), 19, true)) {
+						if(this.shareXOrZ(ppp, players.get(i), bbb)) { //wont effect spectator area
+							if(players.get(i).getFoodLevel() > 2)
+								players.get(i).setFoodLevel(2);
+							players.get(i).sendMessage(ChatColor.AQUA + "You've been hit by " +
+									ChatColor.GOLD + ppp.getName() + "\'s " + ChatColor.AQUA +
+									"Hunger-Rune!  Your hunger bar has been reduced to " + ChatColor.RED +
+									"1" + ChatColor.AQUA + " bars.");
+						}
+					}
+				}
+			}	
+			public boolean shareXOrZ(Player immune, Player test, Block bb) {
+				if(immune.getName().equals(test.getName()))
+					return false;
+				Location tloc = test.getLocation();
+				Location bloc = bb.getLocation();
+				if(tloc.getX() > (bloc.getX()-2) && tloc.getX() < (bloc.getX()+2) ||
+					tloc.getZ() > (bloc.getZ()-2) && tloc.getZ() < (bloc.getZ()+2)) {
+					return true;
+				}
+				return false;
+			}
+			public boolean isOutsideArena(Player pp, int constant, boolean checkY) {
+				Location loc = pp.getLocation();
+				if(loc.getWorld().getEnvironment() != Environment.NORMAL)
+					return true;
+				int x = (int)loc.getX();
+				int y = (int)loc.getY();
+				int z = (int)loc.getZ();
+				if(checkY) {
+					if(y < (plugin.Y+5) && y > (plugin.Y-14)) { /*Bukkit.broadcastMessage("Proper y"); */}
+					else
+						return true;
+				}
+				if(x > (plugin.X-constant) && x < (plugin.X+constant) &&
+						z > (plugin.Z-constant) && z < (plugin.Z+constant)) {
+					return false;
+				}
+				else {
+					return true;
+				}
+			}
+		}, 10L);
+		new ParticleFoodBomb(b.getLocation());
+	}
+	public void createWitchBomb() {
+		witchBomb = new ItemStack(Material.FIREWORK, 1);
+		FireworkMeta fm = (FireworkMeta) witchBomb.getItemMeta();
+		ArrayList<Color> alColor = new ArrayList<Color>();
+		alColor.add(Color.PURPLE);
+		alColor.add(Color.WHITE);
+		alColor.add(Color.MAROON);
+		ArrayList<Color> alFade = new ArrayList<Color>();
+		alFade.add(Color.SILVER);
+		fm.addEffects(FireworkEffect.builder().trail(true).withColor(alColor).withFade(alFade).with(Type.BALL_LARGE).build());
+		fm.setPower(0);
+		fm.setDisplayName(ChatColor.LIGHT_PURPLE + "Headless-Chicken Bomb");
+//####################################################################
+		ArrayList<String> lore = new ArrayList<String>();
+		lore.add(ChatColor.BLUE + "Made By a Cult Of Witches In a Cave");
+		lore.add(ChatColor.RED + "They Call It The" + ChatColor.LIGHT_PURPLE + " Headless-Chicken Bomb");
+		fm.setLore(lore);
+//####################################################################
+		fm.addEnchant(Enchantment.LURE, 1, false);
+		witchBomb.setItemMeta(fm);
+	}
+	public void createSorcerorBomb() {
+		sorcerorBomb = new ItemStack(Material.FIREWORK, 1);
+		FireworkMeta fm = (FireworkMeta) sorcerorBomb.getItemMeta();
+		ArrayList<Color> alColor = new ArrayList<Color>();
+		alColor.add(Color.NAVY);
+		alColor.add(Color.BLACK);
+		alColor.add(Color.ORANGE);
+		ArrayList<Color> alFade = new ArrayList<Color>();
+		alFade.add(Color.RED);
+		fm.addEffects(FireworkEffect.builder().trail(true).withColor(alColor).withFade(alFade).with(Type.STAR).build());
+		fm.setPower(0);
+		fm.setDisplayName(ChatColor.AQUA + "The_Lag");
+//####################################################################
+		ArrayList<String> lore = new ArrayList<String>();
+		lore.add(ChatColor.RED + "Sss-ll-oo-wwwww  mm-oooo");
+		lore.add(ChatColor.GOLD + "Sorcery");
+		fm.setLore(lore);
+//####################################################################
+		fm.addEnchant(Enchantment.ARROW_FIRE, 1, false);
+		sorcerorBomb.setItemMeta(fm);
 	}
 }
