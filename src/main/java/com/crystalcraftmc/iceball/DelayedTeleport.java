@@ -18,10 +18,12 @@ package com.crystalcraftmc.iceball;
 
 import org.bukkit.ChatColor;
 import org.bukkit.Location;
+import org.bukkit.Material;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.player.PlayerMoveEvent;
+import org.bukkit.inventory.ItemStack;
 import org.bukkit.potion.PotionEffect;
 
 public class DelayedTeleport implements Listener {
@@ -30,7 +32,12 @@ public class DelayedTeleport implements Listener {
 	private int accumulator;
 	private final Player thePlayer;
 	private long startTime;
+	private double playerX, playerY, playerZ;
 	public DelayedTeleport(IceBall ib, Player p) {
+		Location llo = p.getLocation();
+		playerX = llo.getX();
+		playerY = llo.getY();
+		playerZ = llo.getZ();
 		startTime = System.currentTimeMillis();
 		thePlayer = p; //final variable needed for run method
 		accumulator = 0;
@@ -51,6 +58,18 @@ public class DelayedTeleport implements Listener {
 					locS.setPitch(plugin.FIGHTPITCH);
 					thePlayer.teleport(locS);
 					thePlayer.getInventory().clear();
+					final ItemStack[] arenaItemList = { new ItemStack(Material.SNOW_BALL, 1),
+							new ItemStack(Material.COOKED_BEEF, 1), new ItemStack(Material.POTION, 1),
+							new ItemStack(Material.ENDER_PEARL, 1), new ItemStack(Material.MONSTER_EGG, 1),
+							new ItemStack(Material.MUTTON, 1), new ItemStack(Material.RABBIT_FOOT, 1),
+							new ItemStack(Material.RABBIT, 1), new ItemStack(Material.RABBIT_HIDE, 1),
+							new ItemStack(Material.FLINT_AND_STEEL, 1), new ItemStack(Material.FIREWORK, 1),
+							new ItemStack(Material.COOKED_MUTTON, 1), new ItemStack(Material.STICK)};
+					for(int i = 0; i < arenaItemList.length; i++) {
+							thePlayer.setItemInHand(arenaItemList[i]);
+							thePlayer.performCommand("pt");
+					}
+					thePlayer.getInventory().clear();
 					thePlayer.sendMessage(ChatColor.GOLD + "Welcome to the" + ChatColor.AQUA +
 							" CCMC " + ChatColor.GOLD + "SnowBall Arena!");
 					thePlayer.sendMessage(ChatColor.RED + "Note that commands have been disabled here.");
@@ -63,13 +82,24 @@ public class DelayedTeleport implements Listener {
 	@EventHandler
 	public void moveEvent(PlayerMoveEvent e) {
 		if(e.getPlayer().getName().equals(thePlayer.getName()) &&
-				(System.currentTimeMillis()-startTime) <= 5500) {
-			hasMoved = true; //extra half-second for safety
-			accumulator++;
-			if(accumulator == 1 && (System.currentTimeMillis()-startTime) <= 4900)
-				e.getPlayer().sendMessage(ChatColor.RED + "Teleport cancelled due to your movement.");
-			if(accumulator > 100)
-				accumulator = 10;
+			(System.currentTimeMillis()-startTime) <= 5500) {
+			if(playerHasDifferentCoords()) {
+				hasMoved = true; //extra half-second for safety
+				accumulator++;
+				if(accumulator == 1 && (System.currentTimeMillis()-startTime) <= 4900)
+					e.getPlayer().sendMessage(ChatColor.RED + "Teleport cancelled due to your movement.");
+				if(accumulator > 100)
+					accumulator = 10;
+			}
 		}
+	}
+	public boolean playerHasDifferentCoords() {
+		Location currentLoc = thePlayer.getLocation();
+		if(playerX < (currentLoc.getX()-.1) || playerX > (currentLoc.getX() +.1) ||
+				playerZ < (currentLoc.getZ()-.1) || playerZ > (currentLoc.getZ() +.1) ||
+				playerY < (currentLoc.getY()-.1) || playerY > (currentLoc.getY() +.1)) {
+			return true;
+		}
+		return false;
 	}
 }
