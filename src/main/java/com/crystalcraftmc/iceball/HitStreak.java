@@ -33,6 +33,7 @@ import org.bukkit.enchantments.Enchantment;
 import org.bukkit.entity.EntityType;
 import org.bukkit.entity.Player;
 import org.bukkit.entity.Wolf;
+import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.FireworkMeta;
 import org.bukkit.inventory.meta.ItemMeta;
@@ -44,21 +45,26 @@ public class HitStreak {
 	private IceBallListener ibl;
 	private String name;
 	private int hitStreak;
-	private Player p;
+	public Player p;
 	public boolean isImmune;
+	public boolean hasDog;
 	private IceBall plugin;
 	private ItemStack witchBomb;
 	private ItemStack hungerRune;
 	private ItemStack sorcerorBomb;
 	private Timer tim;
+	private Timer gappleTim;
 	private int immuneAcc = 0;
 	public boolean isOnTank = false;
+	public int gapple = 0;
 	
 	private enum Team { PURPLE, RED, BLUE, GREEN };
 	private Team team;
+	private Inventory pinv;
 	public HitStreak(Player p, IceBall plugin, String team, IceBallListener ibl) {
 		this.plugin = plugin;
 		this.ibl = ibl;
+		pinv = p.getInventory();
 		name = p.getName();
 		this.p = p;
 		hitStreak = 0;
@@ -74,9 +80,28 @@ public class HitStreak {
 		this.createWitchBomb();
 		this.createSorcerorBomb();
 		hungerRune = new ItemStack(Material.FLINT_AND_STEEL, 1);
+		gappleTim = new Timer(50, new AteGapple());
 	}
 	public String getName() {
 		return name;
+	}
+	public String getTeam() {
+		if(team == Team.RED)
+			return "red";
+		if(team == Team.PURPLE)
+			return "purple";
+		if(team == Team.BLUE)
+			return "blue";
+		return "green";
+	}
+	public ChatColor getTeamColor() {
+		if(team == Team.RED)
+			return ChatColor.DARK_RED;
+		if(team == Team.PURPLE)
+			return ChatColor.LIGHT_PURPLE;
+		if(team == Team.BLUE)
+			return ChatColor.AQUA;
+		return ChatColor.GREEN;
 	}
 	public void anotherSnipe() { //only called if shooter is inside snowball arena
 		hitStreak++;
@@ -89,13 +114,25 @@ public class HitStreak {
 		if(hitStreak == 15) {
 			this.reward(15);
 		}
+		if(hitStreak == 21) {
+			//applies for all teams
+			p.sendMessage(ChatColor.GOLD + "21 HitStreak- Here is a piece of white-wool " +
+					"and some dyes.");
+			p.sendMessage(ChatColor.AQUA + "Place the wool to " + ChatColor.RED + "change teams" +
+					ChatColor.AQUA + " to the wool's respective " + ChatColor.DARK_PURPLE + "color.");
+			pinv.addItem(new ItemStack(Material.WOOL, 1));
+			pinv.addItem(new ItemStack(Material.INK_SACK, 1, (short)1));
+			pinv.addItem(new ItemStack(Material.INK_SACK, 1, (short)5));
+			pinv.addItem(new ItemStack(Material.INK_SACK, 1, (short)12));
+			pinv.addItem(new ItemStack(Material.INK_SACK, 1, (short)10));
+		}
 	}
 	public void reward(int streak) {
 		if(streak == 5) {
 			if(team == Team.RED) {
 				p.sendMessage(ChatColor.LIGHT_PURPLE + "5 Hit Streak! Here's a couple " + ChatColor.GREEN +
 						"EnderPearls.");
-				p.getInventory().addItem(new ItemStack(Material.ENDER_PEARL, 2));
+				pinv.addItem(new ItemStack(Material.ENDER_PEARL, 2));
 			}
 			else if(team == Team.PURPLE) {
 				p.addPotionEffect(new PotionEffect(PotionEffectType.SPEED, 600, 1));
@@ -167,19 +204,19 @@ public class HitStreak {
 				alLore.add(ChatColor.GOLD + "Plastic Beach");
 				im.setLore(alLore);
 				is.setItemMeta(im);
-				p.getInventory().addItem(is);
+				pinv.addItem(is);
 			}
 			else if(team == Team.PURPLE) {
 				p.sendMessage(ChatColor.LIGHT_PURPLE + "15 Hit-Streak!!! You gain a " +
 						"blindness bomb.  Place to blind all enemies in a 10 block cube " +
 						"for" + ChatColor.GOLD + " 10 seconds.");
-				p.getInventory().addItem(new ItemStack(witchBomb));
+				pinv.addItem(new ItemStack(witchBomb));
 			}
 			else if(team == Team.BLUE) {
 				p.sendMessage(ChatColor.RED + "15 Hit-Streak!!! You gain a " +
 						"slow-mo bomb.  Place to slow all enemies in a 10 block cube " +
 						"for" + ChatColor.GOLD + " 12 seconds.");
-				p.getInventory().addItem(new ItemStack(sorcerorBomb));
+				pinv.addItem(new ItemStack(sorcerorBomb));
 			}
 			else if(team == Team.GREEN) {
 				p.sendMessage(ChatColor.GOLD + "15 Hit Streak " + ChatColor.GREEN + "Clown." +
@@ -278,7 +315,7 @@ public class HitStreak {
 		fm.setLore(lore);
 //####################################################################
 		clownBomb.setItemMeta(fm);
-		p.getInventory().addItem(clownBomb);
+		pinv.addItem(clownBomb);
 	}
 	public Color randomColor() {
 		return Color.fromBGR(rand.nextInt(256), 
@@ -391,7 +428,7 @@ public class HitStreak {
 		im.setLore(lore);
 		im.setDisplayName("Floatation Device");
 		wand.setItemMeta(im);
-		p.getInventory().addItem(wand);
+		pinv.addItem(wand);
 	}
 	private class ImmunityFlash implements ActionListener {
 		public void actionPerformed(ActionEvent e) {
@@ -404,6 +441,60 @@ public class HitStreak {
 			if(immuneAcc > 140) {
 				tim.stop();
 				immuneAcc = 0;
+			}
+		}
+	}
+	public void randomizeTeam() {
+		Team newTeam = team;
+		while(newTeam == team) {
+			switch(rand.nextInt(4)) {
+			case 0:
+				newTeam = Team.RED;
+				break;
+			case 1:
+				newTeam = Team.PURPLE;
+				break;
+			case 2:
+				newTeam = Team.BLUE;
+				break;
+			case 3:
+				newTeam = Team.GREEN;
+				break;
+			}
+		}
+		team = newTeam;
+	}
+	public void ateGapple() {
+		gapple++;
+		gappleTim.start();
+	}
+	private class AteGapple implements ActionListener {
+		private int accumulator = 0;
+		private float spread = 0;
+		private float gammount = 20;
+		private final int GSPEED = 2;
+		public void actionPerformed(ActionEvent e) {
+			accumulator++;
+			if(accumulator < 27) {
+				ParticleEffect.REDSTONE.display((float).5, (float)0, (float).5,
+						(float)(GSPEED), (int)(gammount), p.getLocation().add(0, 3, 0), 90.0);
+			}
+			else if(accumulator < 50) {
+				spread += .05;
+				gammount += 3;
+				ParticleEffect.REDSTONE.display((float).5, (float)spread, (float).5,
+						(float)(GSPEED), (int)(gammount), p.getLocation().add(0, 3-(spread/2), 0), 90.0);
+			}
+			else if(accumulator < 100) {
+				spread -= .8;
+				ParticleEffect.REDSTONE.display((float)(.5), (float)spread, (float)(.5),
+						(float)(GSPEED), (int)(gammount), p.getLocation().add(0, 3-(spread/2), 0), 90.0);
+			}
+			else {
+				accumulator = 0;
+				spread = 0;
+				gammount = 20;
+				gappleTim.stop();
 			}
 		}
 	}
