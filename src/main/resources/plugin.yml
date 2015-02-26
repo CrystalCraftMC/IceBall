@@ -1,6 +1,6 @@
 name: IceBall
 main: com.crystalcraftmc.iceball.IceBall
-version: 0.3
+version: 0.2
 commands:
    snowfight:
       description:
