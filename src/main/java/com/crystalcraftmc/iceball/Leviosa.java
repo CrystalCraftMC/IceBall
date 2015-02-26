@@ -14,7 +14,6 @@
  *    limitations under the License.
  */
 
-
 package com.crystalcraftmc.iceball;
 
 import java.awt.event.ActionEvent;
