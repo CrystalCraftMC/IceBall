@@ -34,7 +34,7 @@ import org.bukkit.util.Vector;
 public class Tank implements Listener {
 	private final Player p;
 	private final double TANKSPEED = .25;
-	private final int BATHOVER = -6; //default = -6
+	private final int BATHOVER = 6; //default = -6
 	private HitStreak globalHs;
 	private Villager v1;
 	private IceBall plugin;
