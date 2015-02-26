@@ -48,14 +48,19 @@ public class Leviosa {
 	private class LeviosaUpdate implements ActionListener {
 		public void actionPerformed(ActionEvent e) {
 			accumulator++;
+			if(accumulator == 90) {
+				plugin.getServer().getScheduler().scheduleSyncDelayedTask(plugin, new Runnable() {
+					public void run() {
+						b = (Bat)p.getWorld().spawnEntity(p.getLocation().add(0, 1, 0), EntityType.BAT);
+						b.setPassenger(p);
+						b.setCustomName(ChatColor.GOLD + "Herme's Sandals");
+						b.setCustomNameVisible(true);
+					}
+				}, 1L);
+			}
 			if(accumulator < 100) {}
 			else if(accumulator < 500) {
-				if(accumulator == 100) {
-					b = (Bat)p.getWorld().spawnEntity(p.getLocation().add(0, 1, 0), EntityType.BAT);
-					b.setPassenger(p);
-					b.setCustomName(ChatColor.GOLD + "Herme's Sandals");
-					b.setCustomNameVisible(true);
-				}
+				
 				int yaw = (int)p.getLocation().getYaw();
 				double xVel = 0, zVel = 0;
 				if(yaw >= 0 && yaw < 90) {
