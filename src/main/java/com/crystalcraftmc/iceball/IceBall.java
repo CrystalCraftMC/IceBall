@@ -16,6 +16,8 @@
 
 package com.crystalcraftmc.iceball;
 
+import org.bukkit.ChatColor;
+import org.bukkit.World.Environment;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
@@ -23,6 +25,7 @@ import org.bukkit.plugin.java.JavaPlugin;
 
 public class IceBall extends JavaPlugin {
 	//TEAM RED/PURPLE MUST BE TOWARDS THE WEST FROM /SNOWFIGHT LOC PERSPECTIVE
+	//ARENA MUST BE IN OVERWORLD
 	public final int X = -1;
 	public final int Y = 73;
 	public final int Z = -384;
@@ -41,9 +44,14 @@ public class IceBall extends JavaPlugin {
 	}
 	public boolean onCommand(CommandSender sender, Command cmd, String label, String[] args) {
 		if(sender instanceof Player) {
+			Player p = (Player)sender;
+			if(p.getLocation().getWorld().getEnvironment() != Environment.NORMAL)
+				p.sendMessage(ChatColor.LIGHT_PURPLE + "You must be in the overworld to use these commands");
 			if(label.equalsIgnoreCase("snowfight"))
 				return true;
 			else if(label.equalsIgnoreCase("snowleave"))
+				return true;
+			else if(label.equalsIgnoreCase("snowbuild"))
 				return true;
 			
 		}
