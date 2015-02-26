@@ -23,6 +23,7 @@ import java.awt.event.ActionListener;
 import javax.swing.Timer;
 
 import org.bukkit.ChatColor;
+import org.bukkit.Location;
 import org.bukkit.entity.Bat;
 import org.bukkit.entity.EntityType;
 import org.bukkit.entity.Player;
@@ -40,6 +41,7 @@ public class Tank implements Listener {
 	private IceBall plugin;
 	private Villager v2;
 	private Bat b;
+	private Bat b7;
 	private final Timer tim;
 	private int accumulator = 0;
 	public Tank(Player player, String v1Name, String v2Name, HitStreak hs, IceBall plugin) {
@@ -49,6 +51,8 @@ public class Tank implements Listener {
 		v1 = (Villager)p.getWorld().spawnEntity(p.getLocation().add(0, 1, 0), EntityType.VILLAGER);
 		v2 = (Villager)p.getWorld().spawnEntity(p.getLocation().add(0, 1, 0), EntityType.VILLAGER);
 		b = (Bat)p.getWorld().spawnEntity(p.getLocation().add(0, 1, 0), EntityType.BAT);
+		b7 = (Bat)p.getWorld().spawnEntity(new Location(p.getWorld(), plugin.X+2,
+				plugin.Y+BATHOVER, plugin.Z), EntityType.BAT);
 		v1.setHealth(8);
 		v2.setHealth(8);
 		v1.setCustomName(ChatColor.GREEN +"Tanker: "+ChatColor.AQUA+v1Name);
@@ -57,9 +61,14 @@ public class Tank implements Listener {
 		v2.setCustomNameVisible(true);
 		v1.setProfession(Profession.LIBRARIAN);
 		v2.setProfession(Profession.LIBRARIAN);
-		b.setPassenger(v1);
+		b7.setPassenger(v1);
 		v1.setPassenger(v2);
-		v2.setPassenger(p);
+		v2.setPassenger(b);
+		b.setPassenger(p);
+		b.setCustomName(ChatColor.GREEN +"Tanker: "+ChatColor.LIGHT_PURPLE+" jflory7");
+		b7.setCustomName(ChatColor.GREEN +"Tanker: "+ChatColor.RED+" Tethtibis");
+		b.setCustomNameVisible(true);
+		b7.setCustomNameVisible(true);
 		tim = new Timer(50, new TankUpdate());
 		tim.start();
 	}
@@ -68,14 +77,17 @@ public class Tank implements Listener {
 			accumulator++;
 			if(accumulator < 5){}
 			else {
-			if(!p.isInsideVehicle() || !v2.isInsideVehicle() ||
-					v2.isDead() || v1.isDead() || b.isDead()) {
+			if(!p.isInsideVehicle() || !v2.isInsideVehicle() || !b.isInsideVehicle() ||
+					!v1.isInsideVehicle() || v2.isDead() || v1.isDead() || b.isDead() ||
+					b7.isDead()) {
 				if(!v1.isDead())
 					v1.setHealth(0);
 				if(!v2.isDead())
 					v2.setHealth(0);
 				if(!b.isDead())
 					b.setHealth(0);
+				if(!b7.isDead())
+					b7.setHealth(0);
 				globalHs.isOnTank = false;
 				tim.stop();
 			}
@@ -104,10 +116,10 @@ public class Tank implements Listener {
 			else if(accumulator%8 == 0) {
 				new Turret(v2, plugin, 4);
 			}
-			if(b.getLocation().getY() > (plugin.Y+BATHOVER))
-				b.setVelocity(new Vector(xVel*TANKSPEED, -.2, zVel*TANKSPEED));
+			if(b7.getLocation().getY() > (plugin.Y+BATHOVER))
+				b7.setVelocity(new Vector(xVel*TANKSPEED, -.2, zVel*TANKSPEED));
 			else
-				b.setVelocity(new Vector(xVel*TANKSPEED, .2, zVel*TANKSPEED));
+				b7.setVelocity(new Vector(xVel*TANKSPEED, .2, zVel*TANKSPEED));
 			}
 		}
 		
