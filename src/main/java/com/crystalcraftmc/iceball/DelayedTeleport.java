@@ -60,11 +60,13 @@ public class DelayedTeleport implements Listener {
 					thePlayer.getInventory().clear();
 					final ItemStack[] arenaItemList = { new ItemStack(Material.SNOW_BALL, 1),
 							new ItemStack(Material.COOKED_BEEF, 1), new ItemStack(Material.POTION, 1),
-							new ItemStack(Material.ENDER_PEARL, 1), new ItemStack(Material.MONSTER_EGG, 1),
-							new ItemStack(Material.MUTTON, 1), new ItemStack(Material.RABBIT_FOOT, 1),
-							new ItemStack(Material.RABBIT, 1), new ItemStack(Material.RABBIT_HIDE, 1),
+							new ItemStack(Material.ENDER_PEARL, 1), new ItemStack(Material.WOOL, 1),
+							new ItemStack(Material.INK_SACK, 1), new ItemStack(Material.CARPET, 1),
+							new ItemStack(Material.MUTTON, 1), new ItemStack(Material.LADDER, 1),
 							new ItemStack(Material.FLINT_AND_STEEL, 1), new ItemStack(Material.FIREWORK, 1),
-							new ItemStack(Material.COOKED_MUTTON, 1), new ItemStack(Material.STICK)};
+							new ItemStack(Material.COOKED_MUTTON, 1), new ItemStack(Material.STICK),
+							new ItemStack(Material.SNOW_BLOCK, 1), new ItemStack(Material.PAINTING, 1),
+							new ItemStack(Material.GOLDEN_APPLE, 1)};
 					for(int i = 0; i < arenaItemList.length; i++) {
 							thePlayer.setItemInHand(arenaItemList[i]);
 							thePlayer.performCommand("pt");
@@ -101,5 +103,37 @@ public class DelayedTeleport implements Listener {
 			return true;
 		}
 		return false;
+	}
+	public DelayedTeleport(IceBall ib, Player p, boolean fromSnowBuild) {
+		thePlayer = p; //final variable needed for run method
+		if(fromSnowBuild) {
+			Location llo = p.getLocation();
+			playerX = llo.getX();
+			playerY = llo.getY();
+			playerZ = llo.getZ();
+			startTime = System.currentTimeMillis();
+			
+			accumulator = 0;
+			plugin = ib;
+			plugin.getServer().getPluginManager().registerEvents(this, plugin);
+			hasMoved = false;
+			p.sendMessage(ChatColor.GOLD + "Teleportation will commence in " + ChatColor.RED + "5 seconds" +
+				ChatColor.GOLD + ". don't move.");
+			p.sendMessage(ChatColor.AQUA + "TP allowed to ops & creators.");
+			plugin.getServer().getScheduler().scheduleSyncDelayedTask(plugin, new Runnable() {
+			public void run() {
+				if(!hasMoved) {
+						Location locS = new Location(thePlayer.getWorld(), (double)plugin.X+19,
+							(double)(plugin.Y-7), (double)plugin.Z);
+						locS.setYaw(plugin.FIGHTYAW);
+						locS.setPitch(plugin.FIGHTPITCH);
+						thePlayer.teleport(locS);
+						thePlayer.sendMessage(ChatColor.RED + "Tp Complete.");
+						thePlayer.sendMessage(ChatColor.RED + "Type " + ChatColor.BOLD + "/snowleave" +
+							ChatColor.RED + "  to leave the arena.");
+					}
+				}
+			}, (long)100);
+		}
 	}
 }
