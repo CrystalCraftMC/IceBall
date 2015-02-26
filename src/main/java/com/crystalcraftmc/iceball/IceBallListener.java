@@ -17,6 +17,8 @@
  package com.crystalcraftmc.iceball;
 
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Map;
 
 import org.bukkit.ChatColor;
 import org.bukkit.Color;
@@ -39,12 +41,16 @@ import org.bukkit.event.block.BlockPlaceEvent;
 import org.bukkit.event.entity.EntityDamageByEntityEvent;
 import org.bukkit.event.entity.EntityDamageEvent;
 import org.bukkit.event.entity.EntityDamageEvent.DamageCause;
+import org.bukkit.event.entity.EntityExplodeEvent;
 import org.bukkit.event.entity.PlayerDeathEvent;
 import org.bukkit.event.entity.ProjectileLaunchEvent;
+import org.bukkit.event.inventory.CraftItemEvent;
 import org.bukkit.event.player.PlayerCommandPreprocessEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
+import org.bukkit.event.player.PlayerItemConsumeEvent;
 import org.bukkit.event.player.PlayerLoginEvent;
 import org.bukkit.event.player.PlayerTeleportEvent;
+import org.bukkit.event.player.PlayerTeleportEvent.TeleportCause;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.FireworkMeta;
 import org.bukkit.inventory.meta.ItemMeta;
@@ -59,6 +65,7 @@ public class IceBallListener implements Listener {
 	private ItemStack witchBomb;
 	private ItemStack hungerRune;
 	private ItemStack sorcerorBomb;
+	private Map<String, Integer> woolMap = new HashMap<String, Integer>();
 	public IceBallListener(IceBall ib) {
 		plugin = ib;
 		plugin.getServer().getPluginManager().registerEvents(this, plugin);
@@ -75,12 +82,20 @@ public class IceBallListener implements Listener {
 		this.createWitchBomb();
 		this.createSorcerorBomb();
 		hungerRune = new ItemStack(Material.FLINT_AND_STEEL, 1);
-		
+		woolMap.put("red", 14);
+		woolMap.put("purple", 10);
+		woolMap.put("blue", 3);
+		woolMap.put("green", 5);
 	}
 	@EventHandler (priority=EventPriority.LOWEST)
 	public void stopCommands(PlayerCommandPreprocessEvent e) {
 		Player p = e.getPlayer();
-		if(e.getMessage().equalsIgnoreCase("/snowfight") && 
+		if(e.getMessage().equalsIgnoreCase("/snowbuild") && 
+				p.getWorld().getEnvironment() == Environment.NORMAL &&
+				(p.isOp() || this.hasBuildPermission(e.getPlayer()))) {
+			new DelayedTeleport(plugin, p, true);
+		}
+		else if(e.getMessage().equalsIgnoreCase("/snowfight") && 
 				e.getPlayer().getWorld().getEnvironment() == Environment.NORMAL) {
 			
 			if(!this.isOutsideArena(p, 33, false)) {
@@ -118,7 +133,7 @@ public class IceBallListener implements Listener {
 						" this command.");
 			}
 		}
-		else if(!this.isOutsideArena(p, 33, false) && !this.hasBuildPermission(p) && !p.isOp()) {
+		else if(!this.isOutsideArena(p, 35, false) && !this.hasBuildPermission(p) && !p.isOp()) {
 			p.sendMessage(ChatColor.RED + "Error; only command allowed at the " + ChatColor.AQUA +
 					"CCMC " + ChatColor.RED + "SnowBall arena is: \"" +
 					ChatColor.GOLD + "/snowleave" + ChatColor.RED + "\" which will tp you to spawn.");
@@ -128,16 +143,16 @@ public class IceBallListener implements Listener {
 	@EventHandler (priority= EventPriority.LOWEST)
 	public void resetStatsOnLogIn(PlayerLoginEvent e) {
 		Player p = e.getPlayer();
-			for(int i = 0; i < al.size(); i++) {
-				if(al.get(i).getName().equals(p.getName()))
-					al.remove(i);
-				
-			}
 		if(p.getWorld().getEnvironment() == Environment.NORMAL) {
 			final Player pu = p;
+			//death event requires a small delay to work effectively
 			plugin.getServer().getScheduler().scheduleSyncDelayedTask(plugin, new Runnable() {
 				public void run() {
 					if(!this.isOutsideArena(pu, 20, true)) {
+						for(int i = 0; i < al.size(); i++) {
+							if(pu.getName().equals(al.get(i).getName()))
+								al.remove(i);
+						}
 						pu.setHealth(0);
 						pu.sendMessage(ChatColor.GOLD + "Logging in inside the arena will result in death." +
 								ChatColor.AQUA + " -J");
@@ -172,9 +187,76 @@ public class IceBallListener implements Listener {
 		}
 	}
 	@EventHandler
+	public void blastProt(EntityExplodeEvent e) {
+		if(e.getLocation().getWorld().getEnvironment() == Environment.NORMAL){
+			if(!this.isOutsideArena(e.getLocation(), 50, false))
+				e.setCancelled(true); 		//impenetrable against even tnt cannons
+		}
+	}
+	@EventHandler
 	public void cancelBlockPlace(BlockPlaceEvent e) {
 		Player p = e.getPlayer();
-		if(!this.isOutsideArena(p, 33, false) && e.getPlayer().getWorld().getEnvironment() == Environment.NORMAL) {
+		if(!this.isOutsideArena(p, 20, false) && e.getPlayer().getWorld().getEnvironment() == Environment.NORMAL &&
+				p.getItemInHand().getType() == Material.WOOL) {
+			Block aboveB = e.getBlock().getLocation().add(0, 1, 0).getBlock();
+			boolean isCancelled = false;
+			if((p.isOp() || this.hasBuildPermission(p)) && aboveB.getType() == Material.COBBLESTONE)
+				p.sendMessage("You have perms to place wool under cobblestone.");
+			else {
+				e.setCancelled(true);
+				isCancelled = true;
+			}
+			if(isCancelled) {
+				int wdata = e.getBlockPlaced().getData();
+				//white = 0 && red = 14 && purp=10 && blue=3 && gtreen=5
+				for(int i = 0; i < al.size(); i++) {
+					if(al.get(i).getName().equals(p.getName())) {
+						if(woolMap.get(al.get(i).getTeam()) == wdata) {
+							p.sendMessage(ChatColor.RED + "Error; you are already on the " +
+								al.get(i).getTeamColor() + al.get(i).getTeam() + ChatColor.RED +
+								" team.");
+						}
+						else if(wdata == 14) {
+							al.get(i).setTeam("red");
+							al.get(i).setHitStreak(0);
+							p.sendMessage(ChatColor.YELLOW + "Welcome to the " + ChatColor.RED +
+								"Rogues Team" + ChatColor.YELLOW + ", " + ChatColor.GOLD + p.getName());
+						}
+						else if(wdata == 10) {
+							al.get(i).setTeam("purple");
+							al.get(i).setHitStreak(0);
+							p.sendMessage(ChatColor.YELLOW + "Welcome to the " + ChatColor.LIGHT_PURPLE +
+								"Witch Team" + ChatColor.YELLOW + ", " + ChatColor.GOLD + p.getName());
+						}
+						else if(wdata == 3) {
+							al.get(i).setTeam("blue");
+							al.get(i).setHitStreak(0);
+							p.sendMessage(ChatColor.YELLOW + "Welcome to the " + ChatColor.AQUA +
+								"Sorceror's Team" + ChatColor.YELLOW + ", " + ChatColor.GOLD + p.getName());
+						}
+						else if(wdata == 5) {
+							al.get(i).setTeam("green");
+							al.get(i).setHitStreak(0);
+							p.sendMessage(ChatColor.YELLOW + "Welcome to the " + ChatColor.GREEN +
+								"Clown's Team" + ChatColor.YELLOW + ", " + ChatColor.GOLD + p.getName());
+						}
+						else { //different colored wool -- would only be white
+							al.get(i).randomizeTeam();
+							al.get(i).setHitStreak(0);
+							p.sendMessage(ChatColor.BOLD + "Team Randomized");
+							p.sendMessage(ChatColor.YELLOW + "Welcome to the " + al.get(i).getTeamColor() +
+								String.format("%C%s", al.get(i).getTeam().charAt(0), al.get(i).getTeam().substring(1)) + 
+								" Team" + ChatColor.YELLOW + ", " + ChatColor.GOLD + p.getName());
+						}
+						ItemStack lli = e.getPlayer().getInventory().getItemInHand();
+						int amountRune = lli.getAmount();
+						lli.setAmount(amountRune-1);
+						e.getPlayer().getInventory().setItemInHand(lli);
+					}
+				}
+			}
+		}
+		else if(!this.isOutsideArena(p, 50, false) && e.getPlayer().getWorld().getEnvironment() == Environment.NORMAL) {
 			if(p.isOp() || this.hasBuildPermission(p)) {}
 			else {
 				e.getPlayer().sendMessage(ChatColor.GOLD + "You do not have permission to place a block" +
@@ -205,7 +287,7 @@ public class IceBallListener implements Listener {
 	@EventHandler
 	public void cancelBlockBreak(BlockBreakEvent e) {
 		Player p = e.getPlayer();
-		if(!this.isOutsideArena(p, 33, false)) {
+		if(!this.isOutsideArena(p, 50, false)) {
 			if(p.isOp() || this.hasBuildPermission(p)) {}
 			else {
 				if(e.getPlayer().getWorld().getEnvironment() == Environment.NORMAL) {
@@ -217,16 +299,26 @@ public class IceBallListener implements Listener {
 	}
 	@EventHandler (priority=EventPriority.LOW)
 	public void cancelTP(PlayerTeleportEvent e) {
-		if(!this.isOutsideArena(e.getPlayer(), 40, false) &&
+		if(!this.isOutsideArena(e.getPlayer(), 40, false) && e.getCause() == TeleportCause.ENDER_PEARL &&
+				e.getPlayer().getWorld().getEnvironment() == Environment.NORMAL) {
+			if((Math.abs(plugin.X-e.getTo().getX()) > 14) || 
+					(Math.abs(plugin.Z-e.getTo().getZ()) > 14)) {
+				e.getPlayer().sendMessage(ChatColor.GREEN + "Ender-Pearling has been disabled " +
+					"near the arena walls.");
+				e.getPlayer().getInventory().addItem(new ItemStack(Material.ENDER_PEARL, 1));
+				e.setCancelled(true);
+			}
+		}
+		else if(!this.isOutsideArena(e.getPlayer(), 40, false) &&
 				e.getPlayer().getWorld().getEnvironment() == Environment.NORMAL) {
 			if(this.isOutsideArena(e.getPlayer(), 18, true)) {
-				if(!e.getPlayer().isOp()) {
+				if(!e.getPlayer().isOp() && !this.hasBuildPermission(e.getPlayer())) {
 					e.getPlayer().sendMessage(ChatColor.RED + "Error; you don't have permission to" +
 							" teleport here. " + ChatColor.GREEN + "PowerTool protection.");
 					e.setCancelled(true);
 				}
 				else {
-					e.getPlayer().sendMessage(ChatColor.GOLD + "op- granted access to tp in this zone.");
+					e.getPlayer().sendMessage(ChatColor.GOLD + "op/creator- granted access to tp in this zone.");
 				}
 			}
 		}
@@ -234,13 +326,36 @@ public class IceBallListener implements Listener {
 	
 	public boolean hasBuildPermission(Player p) {
 		for(String name : nonOpBuildPerms) {
-			if(name.equalsIgnoreCase(p.getName()))
+			if(name.equals(p.getName()))
 				return true;
 		}
 		return false;
 	}
 	public boolean isOutsideArena(Player p, int constant, boolean checkY) {
 		Location loc = p.getLocation();
+		if(loc.getWorld().getEnvironment() != Environment.NORMAL)
+			return true;
+		int x = (int)loc.getX();
+		int y = (int)loc.getY();
+		int z = (int)loc.getZ();
+		if(checkY) {
+			if(y < (plugin.Y+5) && y > (plugin.Y-14)) { /*Bukkit.broadcastMessage("Proper y"); */}
+			else
+				return true;
+		}
+		if(x > (plugin.X-constant) && x < (plugin.X+constant) &&
+				z > (plugin.Z-constant) && z < (plugin.Z+constant)) {
+			return false;
+		}
+		else {
+			//if(!(x > (plugin.X-constant))) {Bukkit.broadcastMessage("x: " + x + " is not greater than: " + (plugin.X-constant));}
+			//if(!(x < (plugin.X+constant))) {Bukkit.broadcastMessage("x: " + x + " is not less than: " + (plugin.X+constant));}
+			//if(!(z > (plugin.Z-constant))) {Bukkit.broadcastMessage("z: " + z + " is not greater than: " + (plugin.Z-constant));}
+			//if(!(z < (plugin.Z+constant))) {Bukkit.broadcastMessage("z: " + z + " is not less than: " + (plugin.Z+constant));}
+			return true;
+		}
+	}
+	public boolean isOutsideArena(Location loc, int constant, boolean checkY) {
 		if(loc.getWorld().getEnvironment() != Environment.NORMAL)
 			return true;
 		int x = (int)loc.getX();
@@ -312,10 +427,41 @@ public class IceBallListener implements Listener {
 		}
 	}
 	@EventHandler
+	public void paintingsOpSoExecuteOnCraft(CraftItemEvent e) {
+		Player p = (Player)e.getWhoClicked();
+		if(e.getCurrentItem().getType() == Material.PAINTING &&
+				!this.isOutsideArena(p, 20, true)) {
+			e.getCurrentItem().setType(Material.GOLDEN_APPLE);
+		}
+	}
+	@EventHandler
+	public void opLegend(PlayerItemConsumeEvent e) {
+		if(e.getItem().getType() == Material.GOLDEN_APPLE) {
+			final Player p = e.getPlayer();
+			if(!this.isOutsideArena(p, 20, true)) {
+				p.sendMessage(ChatColor.BLUE + e.getPlayer().getName() + ChatColor.DARK_RED +
+						" You Are Entering " + ChatColor.BOLD + " ICEBALL " + ChatColor.DARK_RED +
+						"Mode.");
+				p.sendMessage(ChatColor.DARK_AQUA + "Aim Your Next Snowball Carefully");
+				for(int i = 0; i < al.size(); i++) {
+					if(al.get(i).getName().equals(p.getName()))
+						al.get(i).ateGapple();
+				}
+				plugin.getServer().getScheduler().scheduleSyncDelayedTask(plugin, new Runnable() {
+					public void run() {
+						p.removePotionEffect(PotionEffectType.REGENERATION);
+						p.removePotionEffect(PotionEffectType.ABSORPTION);
+					}
+				}, 2L);
+				
+			}
+		}
+	}
+	@EventHandler
 	public void registerTeamAndWeaponDetection(PlayerInteractEvent e) {
 		if(e.getAction() == Action.PHYSICAL) {
 			Player p = e.getPlayer();
-			if(!this.isOutsideArena(p, 20, true)) { //checks Environment == NORMAL
+			if(!this.isOutsideArena(p, 18, true)) { //checks Environment == NORMAL
 				Location ploc = e.getClickedBlock().getLocation();
 				String whatTeam = "red";
 				if(ploc.getX() == (plugin.X-15) && ploc.getZ() == (plugin.Z-15) &&
@@ -373,9 +519,31 @@ public class IceBallListener implements Listener {
 					al.add(new HitStreak(p, plugin, whatTeam, this));
 				}
 			}
+			else if(p.isOp() || this.hasBuildPermission(p)) {
+				Location clicked = e.getClickedBlock().getLocation();
+				if(clicked.getWorld().getEnvironment() == Environment.NORMAL) {
+					if((Math.abs(plugin.X-((int)clicked.getX())) == 20) &&
+							(Math.abs(plugin.Z-((int)clicked.getZ())) == 20)) {
+						this.teleportToSpawn(p);
+					}
+				}
+			}
 		}
 		else if((e.getAction() == Action.RIGHT_CLICK_BLOCK || e.getAction() == Action.RIGHT_CLICK_AIR) &&
-				e.getPlayer().getInventory().getItemInHand().getType() == Material.STICK) {
+				e.getPlayer().getInventory().getItemInHand().getType() == Material.SNOW_BALL &&
+				!this.isOutsideArena(e.getPlayer(), 20, true)) {
+			for(int i = 0; i < al.size(); i++) {
+				if(al.get(i).getName().equals(e.getPlayer().getName())){
+					if(al.get(i).gapple > 0) {
+						al.get(i).gapple--;
+						new Beam(al.get(i));
+					}
+				}
+			}
+		}
+		else if((e.getAction() == Action.RIGHT_CLICK_BLOCK || e.getAction() == Action.RIGHT_CLICK_AIR) &&
+				e.getPlayer().getInventory().getItemInHand().getType() == Material.STICK &&
+				!this.isOutsideArena(e.getPlayer(), 20, true)) {
 			ItemStack lli = e.getPlayer().getInventory().getItemInHand();
 			int amountRune = lli.getAmount();
 			lli.setAmount(amountRune-1);
