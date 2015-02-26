@@ -634,7 +634,7 @@ public class IceBallListener implements Listener {
 			}
 			if(e.getDamager() instanceof Wolf && !this.isOutsideArena(((Player)e.getEntity()), 20, true)) {
 				Player chompee = (Player)e.getEntity();
-				chompee.sendMessage(ChatColor.BOLD + e.getDamager().getCustomName() +
+				chompee.sendMessage(ChatColor.BOLD + "Wizard Jr." +
 						ChatColor.YELLOW + " Took a Chunk Out Of You. This Causes " + ChatColor.GREEN +
 						"Nausia " + ChatColor.YELLOW + "and " + ChatColor.GREEN + "Hunger" +
 						ChatColor.YELLOW + ".");
