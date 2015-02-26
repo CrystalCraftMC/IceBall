@@ -302,7 +302,7 @@ public class IceBallListener implements Listener {
 		if(!this.isOutsideArena(e.getPlayer(), 40, false) && e.getCause() == TeleportCause.ENDER_PEARL &&
 				e.getPlayer().getWorld().getEnvironment() == Environment.NORMAL) {
 			if((Math.abs(plugin.X-e.getTo().getX()) > 14) || 
-					(Math.abs(plugin.Z-e.getTo().getZ()) > 14 || (plugin.Y-e.getTo().getY() < 1))) {
+					(Math.abs(plugin.Z-e.getTo().getZ()) > 14 || (plugin.Y-e.getTo().getY() < 2))) {
 				e.getPlayer().sendMessage(ChatColor.GREEN + "Ender-Pearling has been disabled " +
 					"near the arena walls.");
 				e.getPlayer().getInventory().addItem(new ItemStack(Material.ENDER_PEARL, 1));
