@@ -37,7 +37,6 @@ public class Beam {
 			}
 			if(accumulator > 200) {
 				tim.stop();
-				p.sendMessage("stopped tim");
 			}
 		}
 	}
