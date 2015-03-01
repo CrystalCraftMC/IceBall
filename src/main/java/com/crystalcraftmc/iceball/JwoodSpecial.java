@@ -121,18 +121,22 @@ public class JwoodSpecial {
 						plugin.Y+5, plugin.Z+randZ), 1.5, true);
 			}
 			if(ambianceAccumulator == 300) {
-				creep = (Creeper)p.getWorld().spawnEntity(p.getLocation(),
+				plugin.getServer().getScheduler().scheduleSyncDelayedTask(plugin, new Runnable() {
+					public void run() {
+						creep = (Creeper)p.getWorld().spawnEntity(p.getLocation(),
 						EntityType.CREEPER);
-				creep.setCustomName(ChatColor.AQUA + "Crystal-Dragon");
-				creep.setCustomNameVisible(true);
-				bat = (Bat)p.getWorld().spawnEntity(new Location(p.getLocation().getWorld(),
+						creep.setCustomName(ChatColor.AQUA + "Crystal-Dragon");
+						creep.setCustomNameVisible(true);
+						bat = (Bat)p.getWorld().spawnEntity(new Location(p.getLocation().getWorld(),
 						randX+plugin.X, plugin.Y-3.3, randZ+plugin.Z), EntityType.BAT);
-				center = bat.getLocation();
-				bat.setPassenger(creep);
-				ParticleEffect.MOB_APPEARANCE.display((float).5, (float)1, (float).5,
-						(float).5, 15, bat.getLocation(), 90.0);
+						center = bat.getLocation();
+						bat.setPassenger(creep);
+						ParticleEffect.MOB_APPEARANCE.display((float).5, (float)1, (float).5,
+							(float).5, 15, bat.getLocation(), 90.0);
+					}
+				}, 1L);
 			}
-			if(ambianceAccumulator > 302) {
+			if(ambianceAccumulator > 309) {
 				if(!bat.isDead()) {
 					double xSet = bat.getLocation().getX() > center.getX() ? -.1 : .1;
 					double zSet = bat.getLocation().getZ() > center.getZ() ? -.1 : .1;
