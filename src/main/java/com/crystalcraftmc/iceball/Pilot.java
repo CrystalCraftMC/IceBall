@@ -110,9 +110,15 @@ public class Pilot {
 						backZ = -2;
 					if(dir == Direction.WEST)
 						backX = 2;
-					bomber.getWorld().dropItem(new Location(bomber.getWorld(), 
-							bomber.getLocation().getX()+backX, bomber.getLocation().getY(),
-							bomber.getLocation().getZ()+backZ),new ItemStack(Material.BLAZE_ROD, 1));
+					final int backX9 = backX;
+					final int backZ9 = backZ;
+					ib.getServer().getScheduler().scheduleSyncDelayedTask(ib, new Runnable() {
+						public void run() {	
+							bomber.getWorld().dropItem(new Location(bomber.getWorld(), 
+								bomber.getLocation().getX()+backX9, bomber.getLocation().getY(),
+								bomber.getLocation().getZ()+backZ9),new ItemStack(Material.BLAZE_ROD, 1));
+						}
+					}, 1L);
 				}
 				tim.stop();
 			}
