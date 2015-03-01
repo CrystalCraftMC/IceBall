@@ -1,7 +1,7 @@
 name: IceBall
 main: com.crystalcraftmc.iceball.IceBall
 version: 0.3
-Author: Jwood9198
+authors: [Jwood9198]
 commands:
    snowfight:
       description:
