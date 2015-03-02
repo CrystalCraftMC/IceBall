@@ -22,6 +22,9 @@ import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 import org.bukkit.plugin.java.JavaPlugin;
+import org.mcstats.Metrics;
+
+import java.io.IOException;
 
 public class IceBall extends JavaPlugin {
 	//TEAM RED/PURPLE MUST BE TOWARDS THE WEST FROM /SNOWFIGHT LOC PERSPECTIVE
@@ -38,6 +41,13 @@ public class IceBall extends JavaPlugin {
 	public void onEnable() {
 		this.getLogger().info("IceBall enabled.");
 		new IceBallListener(this);
+
+        try {
+            Metrics metrics = new Metrics(this);
+            metrics.start();
+        } catch (IOException e) {
+            // Failed to submit the stats :-(
+        }
 	}
 	public void onDisable() {
 		this.getLogger().info("IceBall disabled.");
