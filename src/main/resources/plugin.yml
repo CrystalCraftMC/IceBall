@@ -1,7 +1,10 @@
 name: IceBall
+description: IceBall is a Spigot Minecraft plugin that allows you to have snowball fights with other players in ways you never expected!
 main: com.crystalcraftmc.iceball.IceBall
 version: 0.3.1
 authors: [Jwood9198, jflory7]
+website: http://crystalcraftmc.com
+
 commands:
    snowfight:
       description: Used to teleport to the CCMC SnowBall arena
