@@ -100,13 +100,14 @@ public class IceBallListener implements Listener {
 				pw.close();
 			}catch(IOException e) {	e.printStackTrace(); }
 		}
-		plugin = ib;
+	plugin = ib;
 		plugin.getServer().getPluginManager().registerEvents(this, plugin);
 		createIbis();
-		officialIceBall = new ItemStack(Material.SNOW_BALL, 2);
+		officialIceBall = new ItemStack(Material.SNOW_BALL, 4);
 		ItemMeta im = officialIceBall.getItemMeta();
 		im.addEnchant(Enchantment.ARROW_INFINITE, 1, false);
-		im.setDisplayName("Ice_Ball");
+		im.addEnchant(Enchantment.ARROW_INFINITE, 1, false);
+		im.setDisplayName(ChatColor.BLUE + "" + ChatColor.BOLD + "Ice_Ball");
 		ArrayList<String> alLore = new ArrayList<String>();
 		alLore.add(ChatColor.RED + "Snow Dug From");
 		alLore.add(ChatColor.GOLD + "Plastic Beach");
