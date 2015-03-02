@@ -26,9 +26,9 @@ import org.bukkit.plugin.java.JavaPlugin;
 public class IceBall extends JavaPlugin {
 	//TEAM RED/PURPLE MUST BE TOWARDS THE WEST FROM /SNOWFIGHT LOC PERSPECTIVE
 	//ARENA MUST BE IN OVERWORLD
-	public final int X = -1;
-	public final int Y = 73;
-	public final int Z = -384;
+	public final int X = -31;
+	public final int Y = 70;
+	public final int Z = -32;
 	public final int SPAWNX = -66;
 	public final int SPAWNY = 32;
 	public final int SPAWNZ = 95;

@@ -33,7 +33,6 @@ import org.bukkit.enchantments.Enchantment;
 import org.bukkit.entity.EntityType;
 import org.bukkit.entity.Player;
 import org.bukkit.entity.Wolf;
-import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.FireworkMeta;
 import org.bukkit.inventory.meta.ItemMeta;
@@ -55,16 +54,15 @@ public class HitStreak {
 	private Timer tim;
 	private Timer gappleTim;
 	private int immuneAcc = 0;
+	private boolean isDoubled; //a perk of being hit by Beam of type water
 	public boolean isOnTank = false;
 	public int gapple = 0;
 	
 	private enum Team { PURPLE, RED, BLUE, GREEN };
 	private Team team;
-	private Inventory pinv;
 	public HitStreak(Player p, IceBall plugin, String team, IceBallListener ibl) {
 		this.plugin = plugin;
 		this.ibl = ibl;
-		pinv = p.getInventory();
 		name = p.getName();
 		this.p = p;
 		hitStreak = 0;
@@ -81,6 +79,17 @@ public class HitStreak {
 		this.createSorcerorBomb();
 		hungerRune = new ItemStack(Material.FLINT_AND_STEEL, 1);
 		gappleTim = new Timer(50, new AteGapple());
+	}
+	public void setDouble(int time8) {
+		isDoubled = true;
+		plugin.getServer().getScheduler().scheduleSyncDelayedTask(plugin, new Runnable() {
+			public void run() {
+				switchOffDouble();
+			}
+		}, (long)time8);
+	}
+	public void switchOffDouble() {
+		isDoubled = false;
 	}
 	public String getName() {
 		return name;
@@ -104,40 +113,49 @@ public class HitStreak {
 		return ChatColor.GREEN;
 	}
 	public void anotherSnipe() { //only called if shooter is inside snowball arena
-		hitStreak++;
-		if(hitStreak == 5) {
-			this.reward(5);
-		}
-		if(hitStreak == 10) {
-			this.reward(10);
-		}
-		if(hitStreak == 15) {
-			this.reward(15);
-		}
-		if(hitStreak == 21) {
-			//applies for all teams
-			p.sendMessage(ChatColor.GOLD + "21 HitStreak- Here is a piece of white-wool " +
+		int iterate8 = isDoubled ? 2 : 1;
+		for(int i = 0; i < iterate8; i++) {
+			hitStreak++;
+			if(hitStreak == 5) {
+				this.reward(5);
+			}
+			if(hitStreak == 10) {
+				this.reward(10);
+			}
+			if(hitStreak == 15) {
+				this.reward(15);
+			}
+			if(hitStreak == 21) {
+				//applies for all teams
+				p.sendMessage(ChatColor.GOLD + "21 HitStreak- Here is a piece of white-wool " +
 					"and some dyes.");
-			p.sendMessage(ChatColor.AQUA + "Place the wool to " + ChatColor.RED + "change teams" +
+				p.sendMessage(ChatColor.AQUA + "Place the wool to " + ChatColor.RED + "change teams" +
 					ChatColor.AQUA + " to the wool's respective " + ChatColor.DARK_PURPLE + "color.");
-			pinv.addItem(new ItemStack(Material.WOOL, 1));
-			pinv.addItem(new ItemStack(Material.INK_SACK, 1, (short)1));
-			pinv.addItem(new ItemStack(Material.INK_SACK, 1, (short)5));
-			pinv.addItem(new ItemStack(Material.INK_SACK, 1, (short)12));
-			pinv.addItem(new ItemStack(Material.INK_SACK, 1, (short)10));
+				delayedGive(new ItemStack(Material.WOOL, 1));
+				delayedGive(new ItemStack(Material.INK_SACK, 1, (short)1));
+				delayedGive(new ItemStack(Material.INK_SACK, 1, (short)5));
+				delayedGive(new ItemStack(Material.INK_SACK, 1, (short)12));
+				delayedGive(new ItemStack(Material.INK_SACK, 1, (short)10));
+			}
 		}
 	}
 	public void reward(int streak) {
 		if(streak == 5) {
+			if(rand.nextInt(5) == 2)
+				this.giveWoolSet(true);
 			if(team == Team.RED) {
 				p.sendMessage(ChatColor.LIGHT_PURPLE + "5 Hit Streak! Here's a couple " + ChatColor.GREEN +
 						"EnderPearls.");
-				pinv.addItem(new ItemStack(Material.ENDER_PEARL, 2));
+				delayedGive(new ItemStack(Material.ENDER_PEARL, 2));
+				if(rand.nextInt(2) == 0)
+					delayedGive(new ItemStack(Material.COAL, 1));
 			}
 			else if(team == Team.PURPLE) {
 				p.addPotionEffect(new PotionEffect(PotionEffectType.SPEED, 600, 1));
 				p.sendMessage(ChatColor.LIGHT_PURPLE + "5 Hit Streak! You have " + ChatColor.RED +
 						"Speed " + ChatColor.BLUE + "for 30 seconds.");
+				if(rand.nextInt(2) == 0)
+					delayedGive(new ItemStack(Material.SLIME_BALL, 1));
 			}
 			else if(team == Team.BLUE) {
 				p.sendMessage(ChatColor.GOLD + "5 Hit Streak " + ChatColor.BLUE + "Wizard." +
@@ -147,9 +165,7 @@ public class HitStreak {
 				wo.setOwner(p);
 				wo.setCustomName(p.getName() + " Wizard Jr.");
 				wo.setCustomNameVisible(true);
-				wo.addPotionEffect(new PotionEffect(PotionEffectType.FIRE_RESISTANCE, 2400, 1));
-				wo.setFireTicks(2400);
-				wo.setHealth(3);
+				wo.setHealth(2);
 			}
 			else if(team == Team.GREEN) {
 				p.sendMessage(ChatColor.GOLD + "5 Hit Streak " + ChatColor.GREEN + "Clown." +
@@ -170,18 +186,24 @@ public class HitStreak {
 						isImmune = false;
 					}
 				}, (long)140);
+				delayedGive(new ItemStack(Material.FEATHER, 1));
+				if(rand.nextInt(2) == 0)
+					delayedGive(new ItemStack(Material.COAL, 1));
 			}
 			else if(team == Team.PURPLE) {
 				p.sendMessage(ChatColor.LIGHT_PURPLE + "10 Hit Streak!! You have " + ChatColor.RED +
 						"Jump-Boost " + ChatColor.BLUE + "for 20 seconds.");
 				p.addPotionEffect(new PotionEffect(PotionEffectType.JUMP, 400, 2));
+				delayedGive(new ItemStack(Material.STRING, 1));
+				giveWoolSet(false);
 			}
 			else if(team == Team.BLUE) {
 				p.sendMessage(ChatColor.GOLD + "10 Hit Streak " + ChatColor.BLUE + "Wizard." +
 						ChatColor.AQUA + " You are bestowed with a magic hunger rune." +
 						ChatColor.DARK_RED + " Right-Click on any block to strike anyone on the same " +
 						"x/z coord (give/take 1 block) with serious " + ChatColor.AQUA + "Hunger.");
-				p.getInventory().addItem(hungerRune);
+				delayedGive(hungerRune);
+				delayedGive(new ItemStack(Material.FLINT, 1));
 			}
 			else if(team == Team.GREEN) {
 				p.sendMessage(ChatColor.GOLD + "10 Hit Streak " + ChatColor.GREEN + "Clown." +
@@ -198,25 +220,27 @@ public class HitStreak {
 				ItemStack is = new ItemStack(Material.SNOW_BALL, 4);
 				ItemMeta im = is.getItemMeta();
 				im.addEnchant(Enchantment.ARROW_INFINITE, 1, false);
-				im.setDisplayName("Ice_Ball");
+				im.setDisplayName(ChatColor.BLUE + "" + ChatColor.BOLD  + "Ice_Ball");
 				ArrayList<String> alLore = new ArrayList<String>();
 				alLore.add(ChatColor.RED + "Snow Dug From");
 				alLore.add(ChatColor.GOLD + "Plastic Beach");
 				im.setLore(alLore);
 				is.setItemMeta(im);
-				pinv.addItem(is);
+				delayedGive(is);
+				if(rand.nextInt(2) == 0)
+					delayedGive(new ItemStack(Material.COAL, 1));
 			}
 			else if(team == Team.PURPLE) {
 				p.sendMessage(ChatColor.LIGHT_PURPLE + "15 Hit-Streak!!! You gain a " +
 						"blindness bomb.  Place to blind all enemies in a 10 block cube " +
 						"for" + ChatColor.GOLD + " 10 seconds.");
-				pinv.addItem(new ItemStack(witchBomb));
+				delayedGive(witchBomb);
 			}
 			else if(team == Team.BLUE) {
 				p.sendMessage(ChatColor.RED + "15 Hit-Streak!!! You gain a " +
 						"slow-mo bomb.  Place to slow all enemies in a 10 block cube " +
 						"for" + ChatColor.GOLD + " 12 seconds.");
-				pinv.addItem(new ItemStack(sorcerorBomb));
+				delayedGive(sorcerorBomb);
 			}
 			else if(team == Team.GREEN) {
 				p.sendMessage(ChatColor.GOLD + "15 Hit Streak " + ChatColor.GREEN + "Clown." +
@@ -249,6 +273,19 @@ public class HitStreak {
 		hitStreak = 0;
 		isImmune = false;
 	}
+	public void giveWoolSet(boolean luck) {
+		if(luck)
+			p.sendMessage(ChatColor.GOLD + "Lucky Break!  Here's a wool & " +
+				"and some dyes.");
+		p.sendMessage(ChatColor.AQUA + "Place the wool to " + ChatColor.RED + "change teams" +
+				ChatColor.AQUA + " to the wool's respective " + ChatColor.DARK_PURPLE + "color.");
+		delayedGive(new ItemStack(Material.WOOL, 1));
+		delayedGive(new ItemStack(Material.INK_SACK, 1, (short)1));
+		delayedGive(new ItemStack(Material.INK_SACK, 1, (short)5));
+		delayedGive(new ItemStack(Material.INK_SACK, 1, (short)12));
+		delayedGive(new ItemStack(Material.INK_SACK, 1, (short)10));
+	}
+	
 	public void createWitchBomb() {
 		witchBomb = new ItemStack(Material.FIREWORK, 1);
 		FireworkMeta fm = (FireworkMeta) witchBomb.getItemMeta();
@@ -315,49 +352,13 @@ public class HitStreak {
 		fm.setLore(lore);
 //####################################################################
 		clownBomb.setItemMeta(fm);
-		pinv.addItem(clownBomb);
+		delayedGive(clownBomb);
 	}
 	public Color randomColor() {
 		return Color.fromBGR(rand.nextInt(256), 
 				rand.nextInt(256), rand.nextInt(256));
-		
-		/*switch(rand.nextInt(16)) {
-		case 0:
-			return Color.AQUA;
-		case 1:
-			return Color.BLACK;
-		case 2:
-			return Color.BLUE;
-		case 3:
-			return Color.FUCHSIA;
-		case 4:
-			return Color.GREEN;
-		case 5:
-			return Color.LIME;
-		case 6:
-			return Color.MAROON;
-		case 7:
-			return Color.NAVY;
-		case 8:
-			return Color.OLIVE;
-		case 9:
-			return Color.ORANGE;
-		case 10:
-			return Color.PURPLE;
-		case 11:
-			return Color.RED;
-		case 12:
-			return Color.SILVER;
-		case 13:
-			return Color.TEAL;
-		case 14:
-			return Color.WHITE;
-		case 15:
-			return Color.YELLOW;
-		default:
-			return Color.fromBGR(rand.nextInt(0xFFFFFF+1), rand.nextInt(0xFFFFFF+1), rand.nextInt(0xFFFFFF+1));
-		}*/
 	}
+	
 	public Type randomType() {
 		switch(rand.nextInt(5)) {
 		case 0:
@@ -373,7 +374,7 @@ public class HitStreak {
 		}
 	}
 	public String randomName() {
-		String[] strand = { "jwood9198", "todd5747", "tethtibis", "jacc734", "jflory7",
+		String[] strand = { "jwood9198", "todd5747", "tethtibis", "jacc734", "jflory7", "dev10k",
 				"tehelee", "puzzlem00n", "fredeux", "xtylorx", "romulus1997", "dextile",
 				"mcminingcaveman", "staroki", "Infinitecorners", "wasthisme", "_stevoism_",
 				"ultimateafs", "mittykitten", "nether_god97", "fortification45",
@@ -383,7 +384,7 @@ public class HitStreak {
 				"jestercopperpot", "dellman135", "crystalcraftmc", p.getName()};
 		//1 in 5 chance that it's the person getting the firework's name
 		int index = rand.nextInt(5) == 1 ? strand.length-1 : rand.nextInt(strand.length);
-		if(rand.nextInt(5) == 1) //1 in 5 chance it's me unscrambled :D
+		if(rand.nextInt(9) == 1) //1 in 9 chance it's me unscrambled :D
 			return "jwood9198";
 		StringBuilder ascend = new StringBuilder(strand[index]);
 		String randStr = "";
@@ -428,7 +429,7 @@ public class HitStreak {
 		im.setLore(lore);
 		im.setDisplayName("Floatation Device");
 		wand.setItemMeta(im);
-		pinv.addItem(wand);
+		delayedGive(wand);
 	}
 	private class ImmunityFlash implements ActionListener {
 		public void actionPerformed(ActionEvent e) {
@@ -497,5 +498,46 @@ public class HitStreak {
 				gappleTim.stop();
 			}
 		}
+	}
+	public void delayedGive(ItemStack zis) {
+		//the purpose of this method is to fix the bug where an item is given to you,
+		//but it doesn't appear in your inventory
+		final Player zz=p;
+		final ItemStack is = zis;
+		plugin.getServer().getScheduler().scheduleSyncDelayedTask(plugin, new Runnable() {
+			public void run() {
+				zz.getInventory().addItem(is);
+			}
+		}, 5L);
+	}
+	
+	public void blazeSequence() {
+		String $ = getRName();
+		p.sendMessage(ChatColor.LIGHT_PURPLE + $ + ChatColor.DARK_AQUA +
+				" = " + ChatColor.GOLD + this.randomizeR($));
+	}
+	public String getRName() {
+		String[] strand = { "jwood9198", "todd5747", "tethtibis", "jacc734", "jflory7", "dev10k",
+				"tehelee", "puzzlem00n", "fredeux", "xtylorx", "romulus1997", "dextile",
+				"mcminingcaveman", "staroki", "Infinitecorners", "wasthisme", "_stevoism_",
+				"ultimateafs", "mittykitten", "nether_god97", "fortification45",
+				"echophox", "kalibj", "mcmorkey", "codebaka", "mattdude234", "ruggedKingz",
+				"El_pengi", "twootton", "ajs", "raeophox", "xxthesilent18xx", "gluumba",
+				"nightling3", "321mcblaster", "thunder_rain", "blackdiamond31", "crisscrisis",
+				"jestercopperpot", "dellman135", "crystalcraftmc", p.getName()};
+		return strand[rand.nextInt(42)];
+	}
+	public String randomizeR(String toR) {
+		StringBuilder ascend = new StringBuilder(toR);
+		String randStr = "";
+		for(int i = 0; i < toR.length(); i++) {
+			int pickR = rand.nextInt(ascend.length());
+			if(i == 0)
+				randStr = randStr.concat(String.format("%C", ascend.charAt(pickR)));
+			else
+				randStr = randStr.concat(String.valueOf(ascend.charAt(pickR)).toLowerCase());
+			ascend.deleteCharAt(pickR);
+		}
+		return randStr;
 	}
 }

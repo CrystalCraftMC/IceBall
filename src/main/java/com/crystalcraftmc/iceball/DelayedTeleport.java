@@ -66,7 +66,17 @@ public class DelayedTeleport implements Listener {
 							new ItemStack(Material.FLINT_AND_STEEL, 1), new ItemStack(Material.FIREWORK, 1),
 							new ItemStack(Material.COOKED_MUTTON, 1), new ItemStack(Material.STICK),
 							new ItemStack(Material.SNOW_BLOCK, 1), new ItemStack(Material.PAINTING, 1),
-							new ItemStack(Material.GOLDEN_APPLE, 1)};
+							new ItemStack(Material.GOLDEN_APPLE, 1), new ItemStack(Material.BOOK_AND_QUILL, 1),
+							new ItemStack(Material.WRITTEN_BOOK, 1), new ItemStack(Material.BOOK, 1),
+							new ItemStack(Material.STRING, 1), new ItemStack(Material.FLINT, 1),
+							new ItemStack(Material.TORCH, 1), new ItemStack(Material.BANNER, 1),
+							new ItemStack(Material.BANNER, 1),
+							new ItemStack(Material.SLIME_BALL, 1), new ItemStack(Material.ARROW, 1),
+							new ItemStack(Material.BOW, 1), new ItemStack(Material.FEATHER, 1),
+							new ItemStack(Material.GOLD_SWORD), new ItemStack(Material.SKULL_ITEM),
+							new ItemStack(Material.SULPHUR), new ItemStack(Material.FIREWORK_CHARGE),
+							new ItemStack(Material.SLIME_BLOCK), new ItemStack(Material.BLAZE_ROD),
+							new ItemStack(Material.COAL), new ItemStack(Material.COAL_BLOCK)};
 					for(int i = 0; i < arenaItemList.length; i++) {
 							thePlayer.setItemInHand(arenaItemList[i]);
 							thePlayer.performCommand("pt");
@@ -77,9 +87,22 @@ public class DelayedTeleport implements Listener {
 					thePlayer.sendMessage(ChatColor.RED + "Note that commands have been disabled here.");
 					thePlayer.sendMessage(ChatColor.RED + "Type " + ChatColor.BOLD + "/snowleave" +
 							ChatColor.RED + "  to leave the arena.");
+					plugin.getServer().getScheduler().scheduleSyncDelayedTask(plugin, new Runnable() {
+						public void run() {
+								if(thePlayer.getInventory().getHelmet() != null)
+									thePlayer.getInventory().getHelmet().setType(Material.SNOW_BALL);
+								if(thePlayer.getInventory().getChestplate() != null)
+									thePlayer.getInventory().getChestplate().setType(Material.SNOW_BALL);
+								if(thePlayer.getInventory().getLeggings() != null)
+									thePlayer.getInventory().getLeggings().setType(Material.SNOW_BALL);
+								if(thePlayer.getInventory().getBoots() != null)
+									thePlayer.getInventory().getBoots().setType(Material.SNOW_BALL);
+						}
+					}, (long)2L);
 				}
 			}
 		}, (long)100);
+		
 	}
 	@EventHandler
 	public void moveEvent(PlayerMoveEvent e) {
