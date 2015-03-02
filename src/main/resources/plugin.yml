@@ -1,7 +1,7 @@
 name: IceBall
 main: com.crystalcraftmc.iceball.IceBall
 version: 0.3.1
-authors: [Jwood9198]
+authors: [Jwood9198, jflory7]
 commands:
    snowfight:
       description: Used to teleport to the CCMC SnowBall arena
