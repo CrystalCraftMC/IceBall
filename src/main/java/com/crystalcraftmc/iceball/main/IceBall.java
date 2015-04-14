@@ -65,6 +65,7 @@ public class IceBall extends JavaPlugin {
 		noPT.add(new ItemStack(Material.SNOW_BLOCK, 1));
 		noPT.add(new ItemStack(Material.BOOK, 1));
 		noPT.add(new ItemStack(Material.BOOK_AND_QUILL, 1));
+		noPT.add(new ItemStack(Material.SNOW, 1));
 		
 		if(!snowballPerms.contains("Jwood9198")) {
 			snowballPerms.add("Jwood9198");
