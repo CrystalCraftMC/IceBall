@@ -27,7 +27,7 @@ import org.bukkit.event.block.Action;
 import org.bukkit.event.entity.EntityDamageByEntityEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
 
-import com.crystalcraftmc.snowball.api.Utility;
+import com.crystalcraftmc.iceball.api.Utility;
 
 /**Handles events related to gameplay*/
 public class GameplayListener implements Listener {
