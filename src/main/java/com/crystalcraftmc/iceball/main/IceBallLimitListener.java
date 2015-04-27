@@ -17,8 +17,6 @@
 package com.crystalcraftmc.iceball.main;
 
 
-import com.crystalcraftmc.iceball.api.Utility;
-import com.crystalcraftmc.iceball.main.IceBall.InventoryResult;
 import org.bukkit.ChatColor;
 import org.bukkit.Location;
 import org.bukkit.World.Environment;
@@ -28,18 +26,21 @@ import org.bukkit.event.Listener;
 import org.bukkit.event.block.BlockBreakEvent;
 import org.bukkit.event.block.BlockPlaceEvent;
 import org.bukkit.event.entity.EntityDamageEvent;
-import org.bukkit.event.entity.EntityDamageEvent.DamageCause;
 import org.bukkit.event.entity.EntityExplodeEvent;
+import org.bukkit.event.entity.EntityDamageEvent.DamageCause;
 import org.bukkit.event.player.PlayerCommandPreprocessEvent;
 import org.bukkit.event.player.PlayerTeleportEvent;
 import org.bukkit.inventory.ItemStack;
 
+import com.crystalcraftmc.iceball.api.Utility;
+import com.crystalcraftmc.iceball.main.Snowball.InventoryResult;
+
 /**Handles events related to limiting what can be done*/
-public class IceBallLimitListener implements Listener {
+public class SnowballLimitListener implements Listener {
 	
-	private IceBall plugin;
+	private Snowball plugin;
 	
-	public IceBallLimitListener(IceBall plugin) {
+	public SnowballLimitListener(Snowball plugin) {
 		this.plugin = plugin;
 		plugin.getServer().getPluginManager().registerEvents(this, plugin);
 	}
@@ -51,21 +52,21 @@ public class IceBallLimitListener implements Listener {
 				return;
 		//1. clear inventory if tping out of library
 		//2. permit tping into library only if clear inventory
-		if(Utility.isInsideSnowball(e.getPlayer().getLocation(), plugin) && 
+		if(Utility.isInsideSnowball(e.getPlayer().getLocation(), plugin, true) && 
 				e.getPlayer().getWorld().getEnvironment() == Environment.NORMAL) {
 			e.getPlayer().getInventory().clear();
 		}
-		else if(Utility.isInsideSnowball(e.getTo(), plugin)) {
+		else if(Utility.isInsideSnowball(e.getTo(), plugin, false)) {
 			Player p = e.getPlayer();
 			InventoryResult ir = Utility.testInventory(p);
 			if(ir == InventoryResult.ARMOR_POLLUTION) {
 				p.sendMessage(ChatColor.GOLD + "Error; you need a clear inventory " +
-						"to enter the IceBall arena (armor slots included)");
+						"to enter the Snowball arena (armor slots included)");
 				e.setCancelled(true);
 			}
 			else if(ir == InventoryResult.POLLUTED) {
 				p.sendMessage(ChatColor.GOLD + "Error; you need a clear inventory " +
-						"to enter the IceBall arena.");
+						"to enter the Snowball arena.");
 				e.setCancelled(true);
 			}
 			else if(ir == InventoryResult.CLEAR) {
@@ -83,7 +84,7 @@ public class IceBallLimitListener implements Listener {
 	
 	@EventHandler
 	public void noBreak(BlockBreakEvent e) {
-		if(Utility.isInsideSnowball(e.getBlock().getLocation(), plugin)) {
+		if(Utility.isInsideSnowball(e.getBlock().getLocation(), plugin, false)) {
 			if(!plugin.hasSnowballPerms(e.getPlayer())) {
 				e.setCancelled(true);
 			}
@@ -92,7 +93,7 @@ public class IceBallLimitListener implements Listener {
 	
 	@EventHandler
 	public void noPlace(BlockPlaceEvent e) {
-		if(Utility.isInsideSnowball(e.getBlock().getLocation(), plugin)) {
+		if(Utility.isInsideSnowball(e.getBlock().getLocation(), plugin, false)) {
 			if(!plugin.hasSnowballPerms(e.getPlayer())) {
 				e.setCancelled(true);
 			}
@@ -102,7 +103,7 @@ public class IceBallLimitListener implements Listener {
 	@EventHandler
 	public void noCommand(PlayerCommandPreprocessEvent e) {
 			if(!plugin.hasSnowballPerms(e.getPlayer()) &&
-					Utility.isInsideSnowball(e.getPlayer().getLocation(), plugin)) {
+					Utility.isInsideSnowball(e.getPlayer().getLocation(), plugin, false)) {
 			String cmd = e.getMessage();
 			if(cmd == null)
 				return;
@@ -115,14 +116,14 @@ public class IceBallLimitListener implements Listener {
 			}
 			e.setCancelled(true);
 			e.getPlayer().sendMessage(ChatColor.DARK_AQUA + "You are only permitted to use /spawn, /home, and " +
-					"/warp while in the IceBall arena.");
+					"/warp while in the Snowball arena.");
 		}
 	}
 	
 	@EventHandler
 	public void blastProt(EntityExplodeEvent e) {
 		if(e.getLocation().getWorld().getEnvironment() == Environment.NORMAL){
-			if(Utility.isInsideSnowball(e.getLocation(), plugin))
+			if(Utility.isInsideSnowball(e.getLocation(), plugin, false))
 				e.setCancelled(true); 		//impenetrable against tnt cannons
 		}
 	}
@@ -134,7 +135,7 @@ public class IceBallLimitListener implements Listener {
 			if(e.getCause().equals(DamageCause.FALL)) {
 				Location loc = p.getLocation();
 				if(loc.getWorld().getEnvironment() == Environment.NORMAL) {
-					if(Utility.isInsideSnowball(loc, plugin))
+					if(Utility.isInsideSnowball(loc, plugin, false))
 						e.setCancelled(true);
 				}
 			}
