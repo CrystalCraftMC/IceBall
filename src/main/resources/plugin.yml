@@ -1,5 +1,5 @@
 name: IceBall
-main: com.crystalcraftmc.iceball.main.IceBall
+main: com.crystalcraftmc.iceball.main.Snowball
 version: 0.4
 description: IceBall is a Spigot plugin that allows you to have snowball fights with other players in ways you never expected!
 authors: [Jwood9198, jflory7]
@@ -21,3 +21,8 @@ commands:
    snowballMaintenance:
       description: No-args teleports to the edge of snowball arena; or specify 3 args for maitenance location
       usage: /<command> <x> <y> <z>
+   snowballClearLimit:
+      description:
+         Shrink the border of the arena for which inventories get cleared upon a tp.
+      usage:
+         /<command> <limit-amount>

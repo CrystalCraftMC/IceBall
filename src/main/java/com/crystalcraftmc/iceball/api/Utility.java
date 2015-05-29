@@ -16,7 +16,6 @@
 
 package com.crystalcraftmc.iceball.api;
 
-import com.crystalcraftmc.iceball.main.IceBall.InventoryResult;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.World.Environment;
@@ -24,8 +23,11 @@ import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.PlayerInventory;
 
+import com.crystalcraftmc.iceball.main.Snowball;
+import com.crystalcraftmc.iceball.main.Snowball.InventoryResult;
 
-/**This class provides handy utility methods for IceBall*/
+
+/**This class provides handy utility methods for Snowball*/
 public class Utility {
 
 	
@@ -60,10 +62,12 @@ public class Utility {
 
 	
 	/**Checks whether a given coordinate is inside of the snowball area
-	 * @param loc, the location we're teleporting to
+	 * @param Location, the location we're teleporting to
+	 * @param Snowball plugin
+	 * @param isClearTP, a boolean - true if we're checking the clearTP area
 	 * @return boolean, true if the coordinates are inside the area
 	 */
-	public static boolean isInsideSnowball(Location loc, com.crystalcraftmc.iceball.main.IceBall plugin) {
+	public static boolean isInsideSnowball(Location loc, Snowball plugin, boolean isClearTP) {
 		if(loc.getWorld().getEnvironment() != Environment.NORMAL)
 			return false;
 		int x = (int)loc.getX();
@@ -97,16 +101,26 @@ public class Utility {
 			highZ = plugin.snowballArea[2];
 		}
 		
-		if(x >= lowX && x <= highX &&
-				y >= lowY && y <= highY &&
-				z >= lowZ && z <= highZ) {
-			return true;
+		if(isClearTP) {
+			int cl = plugin.clearLimit;
+			if(x >= lowX+cl && x <= highX-cl &&
+					y >= lowY+cl && y <= highY-cl &&
+					z >= lowZ+cl && z <= highZ-cl) {
+				return true;
+			}
+		}
+		else {
+			if(x >= lowX && x <= highX &&
+					y >= lowY && y <= highY &&
+					z >= lowZ && z <= highZ) {
+				return true;
+			}
 		}
 		return false;
 	}
 	
 	/**Tests that a String is a valid int value
-	 * @param args varargs the string(s) we're testing
+	 * @param String varargs the string(s) we're testing
 	 * @return boolean; true if the string(s) is an int
 	 */
 	public static boolean isInt(String... args) {
