@@ -16,22 +16,7 @@
 
 package com.crystalcraftmc.iceball.main;
 
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.ObjectInputStream;
-import java.io.ObjectOutputStream;
-import java.io.PrintWriter;
-import java.util.ArrayList;
-import java.util.Scanner;
-
-
-
-
-
-
-import org.bukkit.Bukkit;
+import com.crystalcraftmc.iceball.api.Utility;
 import org.bukkit.ChatColor;
 import org.bukkit.Location;
 import org.bukkit.Material;
@@ -42,15 +27,17 @@ import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.plugin.java.JavaPlugin;
 
-import com.crystalcraftmc.iceball.api.Utility;
+import java.io.*;
+import java.util.ArrayList;
+import java.util.Scanner;
 
-public class Snowball extends JavaPlugin {
-	
+public class IceBall extends JavaPlugin {
+
 	/**Holds snowball arena area*/
-	public int[] snowballArea = new int[6];
+	public int[] iceballArea = new int[6];
 	
 	/**Holds snowball maintenance warp location*/
-	public int[] snowballMaintenance = new int[3];
+	public int[] iceballMaintenance = new int[3];
 	
 	/**Holds different types of inventories*/
 	public enum InventoryResult {
@@ -58,7 +45,7 @@ public class Snowball extends JavaPlugin {
 	}
 	
 	/**Lists of ppl who have snowball perms*/
-	ArrayList<String> snowballPerms = new ArrayList<String>();
+	ArrayList<String> iceballPerms = new ArrayList<String>();
 	
 	/**Items to de-powertool*/
 	ArrayList<ItemStack> noPT = new ArrayList<ItemStack>();
@@ -75,7 +62,7 @@ public class Snowball extends JavaPlugin {
 		this.initializeSnowballPerms();
 		this.initializeSnowballMaintenance();
 		this.initializeSnowballClearLimit();
-		new SnowballLimitListener(this);
+		new IceBallLimitListener(this);
 		new GameplayListener(this);
 		noPT.add(new ItemStack(Material.COOKED_BEEF, 1));
 		noPT.add(new ItemStack(Material.WRITTEN_BOOK, 1));
@@ -85,14 +72,14 @@ public class Snowball extends JavaPlugin {
 		noPT.add(new ItemStack(Material.BOOK_AND_QUILL, 1));
 		noPT.add(new ItemStack(Material.SNOW, 1));
 		
-		if(!snowballPerms.contains("Jwood9198")) {
-			snowballPerms.add("Jwood9198");
+		if(!iceballPerms.contains("Jwood9198")) {
+			iceballPerms.add("Jwood9198");
 		}
-		if(!snowballPerms.contains("Tethtibis")) {
-			snowballPerms.add("Tethtibis");
+		if(!iceballPerms.contains("Tethtibis")) {
+			iceballPerms.add("Tethtibis");
 		}
-		if(!snowballPerms.contains("Todd5747")) {
-			snowballPerms.add("Todd5747");
+		if(!iceballPerms.contains("Todd5747")) {
+			iceballPerms.add("Todd5747");
 		}
 	}
 	public void onDisable() {
@@ -113,7 +100,7 @@ public class Snowball extends JavaPlugin {
 							}
 						}
 						for(int i = 0; i < 6; i++) {
-							snowballArea[i] = Integer.parseInt(args[i]);
+							iceballArea[i] = Integer.parseInt(args[i]);
 						}
 						this.updateSnowballArea();
 						p.sendMessage("Snowball area updated.");
@@ -127,7 +114,7 @@ public class Snowball extends JavaPlugin {
 				else if(label.equalsIgnoreCase("deleteSnowball")) {
 					if(args.length == 0) {
 						for(int i = 0; i < 6; i++)
-							snowballArea[i] = 1234567899;
+							iceballArea[i] = 1234567899;
 						this.updateSnowballArea();
 						return true;
 					}
@@ -142,11 +129,11 @@ public class Snowball extends JavaPlugin {
 				else if(label.equalsIgnoreCase("snowballperms")) {
 					if(args.length == 0) {
 						p.sendMessage(ChatColor.DARK_AQUA + "List of players with Snowball Perms:");
-						for(int i = 0; i < snowballPerms.size(); i++) {
+						for(int i = 0; i < iceballPerms.size(); i++) {
 							if(i%2 == 0)
-								p.sendMessage(ChatColor.AQUA + snowballPerms.get(i));
+								p.sendMessage(ChatColor.AQUA + iceballPerms.get(i));
 							else
-								p.sendMessage(ChatColor.BLUE + snowballPerms.get(i));
+								p.sendMessage(ChatColor.BLUE + iceballPerms.get(i));
 						}
 						return true;
 					}
@@ -154,7 +141,7 @@ public class Snowball extends JavaPlugin {
 						if(args[0].equalsIgnoreCase("add") || args[0].equalsIgnoreCase("remove")) {
 							boolean isAdd = args[0].equalsIgnoreCase("add") ? true : false;
 							if(isAdd) {
-								for(String check : snowballPerms) {
+								for(String check : iceballPerms) {
 									if(check.equalsIgnoreCase(args[1])) {
 										p.sendMessage(ChatColor.RED + "Error; " + ChatColor.GOLD + args[1] +
 											ChatColor.RED + " is already in the Snowball Perms list.");
@@ -163,16 +150,16 @@ public class Snowball extends JavaPlugin {
 										return true;
 									}
 								}
-								snowballPerms.add(args[1]);
+								iceballPerms.add(args[1]);
 								p.sendMessage(ChatColor.GOLD + args[1] + ChatColor.DARK_AQUA + " added to " +
 										"the Snowball perms list.");
 								this.updatePerms();
 								return true;
 							}
 							else {
-								for(int i = 0; i < snowballPerms.size(); i++) {
-									if(snowballPerms.get(i).equalsIgnoreCase(args[1])) {
-										snowballPerms.remove(i);
+								for(int i = 0; i < iceballPerms.size(); i++) {
+									if(iceballPerms.get(i).equalsIgnoreCase(args[1])) {
+										iceballPerms.remove(i);
 										p.sendMessage(ChatColor.DARK_AQUA + "Player successfully removed.");
 										this.updatePerms();
 										return true;
@@ -196,8 +183,8 @@ public class Snowball extends JavaPlugin {
 				else if(label.equalsIgnoreCase("snowballmaintenance")) {
 					if(args.length == 0) {
 						if(p.getWorld().getEnvironment() == Environment.NORMAL) {
-							p.teleport(new Location(p.getWorld(), (double)snowballMaintenance[0],
-									(double)snowballMaintenance[1], (double)snowballMaintenance[2]));
+							p.teleport(new Location(p.getWorld(), (double)iceballMaintenance[0],
+									(double)iceballMaintenance[1], (double)iceballMaintenance[2]));
 							p.sendMessage(ChatColor.BLUE + "To maintenance...");
 							return true;
 						}
@@ -210,9 +197,9 @@ public class Snowball extends JavaPlugin {
 					else if(args.length == 3) {
 						if(Utility.isInt(args[0], args[1], args[2])) {
 							for(int i = 0; i < 3; i++)
-								snowballMaintenance[i] = Integer.parseInt(args[i]);
+								iceballMaintenance[i] = Integer.parseInt(args[i]);
 							this.updateSnowballMaintenance();
-							p.sendMessage(ChatColor.GOLD + "Snowball Maintenance area updated to " +
+							p.sendMessage(ChatColor.GOLD + "IceBall Maintenance area updated to " +
 									ChatColor.GRAY + "(" + ChatColor.LIGHT_PURPLE + args[0] + ", " + args[1] +
 									", " + args[2] + ChatColor.GRAY + ")");
 							return true;
@@ -254,7 +241,7 @@ public class Snowball extends JavaPlugin {
 		if(p.isOp())
 			return true;
 		String name = p.getName();
-		for(String id : snowballPerms) {
+		for(String id : iceballPerms) {
 			if(name.equals(id))
 				return true;
 		}
@@ -263,17 +250,17 @@ public class Snowball extends JavaPlugin {
 	
 	
 	/**Displays the current snowball area
-	 * @param player, the player we're showing the snowball area to
+	 * @param p Player we're showing the snowball area to
 	 */
 	public void showSnowball(Player p) {
 		p.sendMessage(ChatColor.BLUE + "Coordinates are formatted as (x, y, z)");
 		p.sendMessage(ChatColor.DARK_AQUA + "Corner 1: " + ChatColor.DARK_PURPLE + 
-				"(" + ChatColor.GOLD + String.valueOf(snowballArea[0]) +
-					", " + String.valueOf(snowballArea[1]) + ", " + String.valueOf(snowballArea[2]) +
+				"(" + ChatColor.GOLD + String.valueOf(iceballArea[0]) +
+					", " + String.valueOf(iceballArea[1]) + ", " + String.valueOf(iceballArea[2]) +
 					ChatColor.DARK_PURPLE + ")");
 		p.sendMessage(ChatColor.DARK_AQUA + "Corner 2: " + ChatColor.DARK_PURPLE + 
-				"(" + ChatColor.GOLD + String.valueOf(snowballArea[3]) +
-					", " + String.valueOf(snowballArea[4]) + ", " + String.valueOf(snowballArea[5]) +
+				"(" + ChatColor.GOLD + String.valueOf(iceballArea[3]) +
+					", " + String.valueOf(iceballArea[4]) + ", " + String.valueOf(iceballArea[5]) +
 					ChatColor.DARK_PURPLE + ")");
 	}
 	
@@ -283,9 +270,9 @@ public class Snowball extends JavaPlugin {
 	
 	/**Initializes the snowball area from the file*/
 	public void initializeSnowballArea() {
-		if(!new File("SnowballFiles").exists())
-			new File("SnowballFiles").mkdir();
-		File file = new File("SnowballFiles\\Snowball.txt");
+		if(!new File("IceBallFiles").exists())
+			new File("IceBallFiles").mkdir();
+		File file = new File("IceBallFiles/plugins/IceBall/Snowball.txt");
 		Scanner in = null;
 		PrintWriter pw = null;
 		try{
@@ -293,13 +280,13 @@ public class Snowball extends JavaPlugin {
 				pw = new PrintWriter("SnowballFiles\\Snowball.txt");
 				for(int i = 0; i < 6; i++) {
 					pw.println("1234567899");
-					snowballArea[i] = 1234567899;
+					iceballArea[i] = 1234567899;
 				}
 			}
 			else {
 				in = new Scanner(file);
 				for(int i = 0; i < 6; i++) {
-					snowballArea[i] = Integer.parseInt(in.nextLine());
+					iceballArea[i] = Integer.parseInt(in.nextLine());
 				}
 			}
 		}catch(IOException e) { e.printStackTrace();
@@ -315,11 +302,11 @@ public class Snowball extends JavaPlugin {
 	public void updateSnowballArea() {
 		PrintWriter pw = null;
 		try{
-			if(!new File("SnowballFiles").exists())
-				new File("SnowballFiles").mkdir();
-			pw = new PrintWriter("SnowballFiles\\Snowball.txt");
+			if(!new File("IceBallFiles").exists())
+				new File("IceBallFiles").mkdir();
+			pw = new PrintWriter("IceBallFiles/plugins/IceBall/Snowball.txt");
 			for(int i = 0; i < 6; i++)
-				pw.println(String.valueOf(snowballArea[i]));
+				pw.println(String.valueOf(iceballArea[i]));
 		}catch(IOException e) { e.printStackTrace();
 		}finally {
 			if(pw != null)
@@ -332,13 +319,13 @@ public class Snowball extends JavaPlugin {
 		FileInputStream fis = null;
 		ObjectInputStream ois = null;
 		try{
-			if(!new File("SnowballFiles").exists())
-				new File("SnowballFiles").mkdir();
-			File file = new File("SnowballFiles\\SnowballPerms.ser");
+			if(!new File("IceBallFiles").exists())
+				new File("IceBallFiles").mkdir();
+			File file = new File("IceBallFiles/plugins/IceBall/SnowballPerms.ser");
 			if(file.exists()) {
 				fis = new FileInputStream(file);
 				ois = new ObjectInputStream(fis);
-				snowballPerms = (ArrayList<String>)ois.readObject();
+				iceballPerms = (ArrayList<String>)ois.readObject();
 			}
 		}catch(IOException e) { e.printStackTrace(); 
 		}catch(ClassNotFoundException e) { e.printStackTrace();
@@ -357,14 +344,14 @@ public class Snowball extends JavaPlugin {
 		FileOutputStream fos = null;
 		ObjectOutputStream oos = null;
 		try{
-			if(!new File("SnowballFiles").exists())
-				new File("SnowballFiles").mkdir();
-			File file = new File("SnowballFiles\\SnowballPerms.ser");
+			if(!new File("IceBallFiles").exists())
+				new File("IceBallFiles").mkdir();
+			File file = new File("IceBallFiles/plugins/IceBall/SnowballPerms.ser");
 			if(file.exists())
 				file.delete();
 			fos = new FileOutputStream(file);
 			oos = new ObjectOutputStream(fos);
-			oos.writeObject(snowballPerms);
+			oos.writeObject(iceballPerms);
 		}catch(IOException e) { e.printStackTrace();
 		}finally {
 			try{
@@ -376,16 +363,16 @@ public class Snowball extends JavaPlugin {
 	
 	/**Initializes the maintenance location file*/
 	public void initializeSnowballMaintenance() {
-		File file = new File("SnowballFiles\\SnowballMaintenance.txt");
-		if(!new File("SnowballFiles").exists())
-			new File("SnowballFiles").mkdir();
+		File file = new File("IceBallFiles/plugins/IceBall/SnowballMaintenance.txt");
+		if(!new File("IceBallFiles").exists())
+			new File("IceBallFiles").mkdir();
 		if(file.exists()) {
 			Scanner in = null;
 			try{
 				in = new Scanner(file);
 				String[] str = in.nextLine().split(",");
 				for(int i = 0; i < 3; i++)
-					snowballMaintenance[i] = Integer.parseInt(str[i]);
+					iceballMaintenance[i] = Integer.parseInt(str[i]);
 			}catch(IOException e) { e.printStackTrace();
 			}finally {
 				if(in != null)
@@ -393,16 +380,16 @@ public class Snowball extends JavaPlugin {
 			}
 		}
 		else {
-			for(int i = 0; i < snowballMaintenance.length; i++)
-				snowballMaintenance[i] = 9198;
+			for(int i = 0; i < iceballMaintenance.length; i++)
+				iceballMaintenance[i] = 9198;
 		}
 	}
 	
 	/**Initializes the snowball clearLimit file*/
 	public void initializeSnowballClearLimit() {
-		File file = new File("SnowballFiles\\SnowballClearLimit.txt");
-		if(!new File("SnowballFiles").exists())
-			new File("SnowballFiles").mkdir();
+		File file = new File("IceBallFiles/plugins/IceBall/SnowballClearLimit.txt");
+		if(!new File("IceBallFiles").exists())
+			new File("IceBallFiles").mkdir();
 		if(file.exists()) {
 			Scanner in = null;
 			try{
@@ -422,15 +409,15 @@ public class Snowball extends JavaPlugin {
 	
 	/**Updates the snowball maintenance file*/
 	public void updateSnowballMaintenance() {
-		File file = new File("SnowballFiles\\SnowballMaintenance.txt");
+		File file = new File("IceBallFiles/plugins/IceBall/SnowballMaintenance.txt");
 		PrintWriter pw = null;
-		if(!new File("SnowballFiles").exists())
-			new File("SnowballFiles").mkdir();
+		if(!new File("IceBallFiles").exists())
+			new File("IceBallFiles").mkdir();
 		try{
 			pw = new PrintWriter(file);
-			pw.println(String.valueOf(snowballMaintenance[0]) + "," +
-					String.valueOf(snowballMaintenance[1]) + "," +
-							String.valueOf(snowballMaintenance[2]));
+			pw.println(String.valueOf(iceballMaintenance[0]) + "," +
+					String.valueOf(iceballMaintenance[1]) + "," +
+							String.valueOf(iceballMaintenance[2]));
 		}catch(IOException e) { e.printStackTrace();
 		}finally {
 			if(pw != null)
@@ -440,10 +427,10 @@ public class Snowball extends JavaPlugin {
 	
 	/**Updates the snowball clearLimit file*/
 	public void updateSnowballClearLimit() {
-		File file = new File("SnowballFiles\\SnowballClearLimit.txt");
+		File file = new File("IceBallFiles/plugins/IceBall/IceBallClearLimit.txt");
 		PrintWriter pw = null;
-		if(!new File("SnowballFiles").exists())
-			new File("SnowballFiles").mkdir();
+		if(!new File("IceBallFiles").exists())
+			new File("IceBallFiles").mkdir();
 		try{
 			pw = new PrintWriter(file);
 			pw.println(String.valueOf(clearLimit));

@@ -16,15 +16,14 @@
 
 package com.crystalcraftmc.iceball.api;
 
+import com.crystalcraftmc.iceball.main.IceBall;
+import com.crystalcraftmc.iceball.main.Snowball.InventoryResult;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.World.Environment;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.PlayerInventory;
-
-import com.crystalcraftmc.iceball.main.Snowball;
-import com.crystalcraftmc.iceball.main.Snowball.InventoryResult;
 
 
 /**This class provides handy utility methods for Snowball*/
@@ -36,7 +35,7 @@ public class Utility {
 	 * @param p the player we're testing
 	 * @return InventoryResult result of this test
 	 */
-	public static InventoryResult testInventory(Player p) {
+	public static IceBall.InventoryResult testInventory(Player p) {
 		PlayerInventory pi = p.getInventory();
 		if(pi.getHelmet() != null)
 			return InventoryResult.ARMOR_POLLUTION;
@@ -65,40 +64,41 @@ public class Utility {
 	 * @param Location, the location we're teleporting to
 	 * @param Snowball plugin
 	 * @param isClearTP, a boolean - true if we're checking the clearTP area
+	 * @param plugin
 	 * @return boolean, true if the coordinates are inside the area
 	 */
-	public static boolean isInsideSnowball(Location loc, Snowball plugin, boolean isClearTP) {
+	public static boolean isInsideSnowball(Location loc, IceBall plugin, boolean isClearTP) {
 		if(loc.getWorld().getEnvironment() != Environment.NORMAL)
 			return false;
 		int x = (int)loc.getX();
 		int y = (int)loc.getY();
 		int z = (int)loc.getZ();
 		int lowX, highX, lowY, highY, lowZ, highZ;
-		if(plugin.snowballArea[0] < plugin.snowballArea[3]) {
-			lowX = plugin.snowballArea[0];
-			highX = plugin.snowballArea[3];
+		if(plugin.iceballArea[0] < plugin.iceballArea[3]) {
+			lowX = plugin.iceballArea[0];
+			highX = plugin.iceballArea[3];
 		}
 		else {
-			lowX = plugin.snowballArea[3];
-			highX = plugin.snowballArea[0];
+			lowX = plugin.iceballArea[3];
+			highX = plugin.iceballArea[0];
 		}
 		
-		if(plugin.snowballArea[1] < plugin.snowballArea[4]) {
-			lowY = plugin.snowballArea[1];
-			highY = plugin.snowballArea[4];
+		if(plugin.iceballArea[1] < plugin.iceballArea[4]) {
+			lowY = plugin.iceballArea[1];
+			highY = plugin.iceballArea[4];
 		}
 		else {
-			lowY = plugin.snowballArea[4];
-			highY = plugin.snowballArea[1];
+			lowY = plugin.iceballArea[4];
+			highY = plugin.iceballArea[1];
 		}
 		
-		if(plugin.snowballArea[2] < plugin.snowballArea[5]) {
-			lowZ = plugin.snowballArea[2];
-			highZ = plugin.snowballArea[5];
+		if(plugin.iceballArea[2] < plugin.iceballArea[5]) {
+			lowZ = plugin.iceballArea[2];
+			highZ = plugin.iceballArea[5];
 		}
 		else {
-			lowZ = plugin.snowballArea[5];
-			highZ = plugin.snowballArea[2];
+			lowZ = plugin.iceballArea[5];
+			highZ = plugin.iceballArea[2];
 		}
 		
 		if(isClearTP) {

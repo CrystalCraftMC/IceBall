@@ -17,6 +17,7 @@
 
 package com.crystalcraftmc.iceball.main;
 
+import com.crystalcraftmc.iceball.api.Utility;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.block.Block;
@@ -27,14 +28,12 @@ import org.bukkit.event.block.Action;
 import org.bukkit.event.entity.EntityDamageByEntityEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
 
-import com.crystalcraftmc.iceball.api.Utility;
-
 /**Handles events related to gameplay*/
 public class GameplayListener implements Listener {
 	
-	Snowball plugin;
+	IceBall plugin;
 	
-	public GameplayListener(Snowball plugin) {
+	public GameplayListener(IceBall plugin) {
 		this.plugin = plugin;
 		plugin.getServer().getPluginManager().registerEvents(this, plugin);
 	}
@@ -46,8 +45,8 @@ public class GameplayListener implements Listener {
 			if(Utility.isInsideSnowball(b.getLocation(), plugin, false)) {
 				if(b.getType() == Material.IRON_PLATE) {
 					Player p = e.getPlayer();
-					int centerx = (plugin.snowballArea[0]+plugin.snowballArea[3])/2;
-					int centerz = (plugin.snowballArea[2]+plugin.snowballArea[5])/2;
+					int centerx = (plugin.iceballArea[0]+plugin.iceballArea[3])/2;
+					int centerz = (plugin.iceballArea[2]+plugin.iceballArea[5])/2;
 					int xOff = centerx > p.getLocation().getX() ? 1 : -1;
 					int zOff = centerz > p.getLocation().getZ() ? 1 : -1;
 					Location tp = p.getLocation().add(xOff, -3, zOff);

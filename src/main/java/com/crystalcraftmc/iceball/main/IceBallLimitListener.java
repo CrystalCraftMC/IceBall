@@ -17,6 +17,8 @@
 package com.crystalcraftmc.iceball.main;
 
 
+import com.crystalcraftmc.iceball.api.Utility;
+import com.crystalcraftmc.iceball.main.IceBall.InventoryResult;
 import org.bukkit.ChatColor;
 import org.bukkit.Location;
 import org.bukkit.World.Environment;
@@ -26,21 +28,18 @@ import org.bukkit.event.Listener;
 import org.bukkit.event.block.BlockBreakEvent;
 import org.bukkit.event.block.BlockPlaceEvent;
 import org.bukkit.event.entity.EntityDamageEvent;
-import org.bukkit.event.entity.EntityExplodeEvent;
 import org.bukkit.event.entity.EntityDamageEvent.DamageCause;
+import org.bukkit.event.entity.EntityExplodeEvent;
 import org.bukkit.event.player.PlayerCommandPreprocessEvent;
 import org.bukkit.event.player.PlayerTeleportEvent;
 import org.bukkit.inventory.ItemStack;
 
-import com.crystalcraftmc.iceball.api.Utility;
-import com.crystalcraftmc.iceball.main.Snowball.InventoryResult;
-
 /**Handles events related to limiting what can be done*/
-public class SnowballLimitListener implements Listener {
+public class IceBallLimitListener implements Listener {
 	
-	private Snowball plugin;
+	private IceBall plugin;
 	
-	public SnowballLimitListener(Snowball plugin) {
+	public IceBallLimitListener(IceBall plugin) {
 		this.plugin = plugin;
 		plugin.getServer().getPluginManager().registerEvents(this, plugin);
 	}
