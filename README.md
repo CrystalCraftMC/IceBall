@@ -1,4 +1,4 @@
-# IceBall
+# IceBall [![Build Status](https://travis-ci.org/CrystalCraftMC/IceBall.svg)](https://travis-ci.org/CrystalCraftMC/IceBall)
 
 ## What is it?
 IceBall is a Spigot Minecraft plugin that allows you to have snowball fights with other players in ways you never
