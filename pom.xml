@@ -19,7 +19,7 @@
 
   <groupId>com.crystalcraftmc.iceball</groupId>
   <artifactId>IceBall</artifactId>
-  <version>1.8.3-R0.1-SNAPSHOT</version>
+  <version>1.8.6-R0.1-SNAPSHOT</version>
 
   <profiles>
 		<profile>
@@ -63,12 +63,12 @@
 		<dependency>
 			<groupId>org.spigotmc</groupId>
 			<artifactId>spigot-api</artifactId>
-			<version>1.8.3-R0.1-SNAPSHOT</version>
+			<version>1.8.6-R0.1-SNAPSHOT</version>
 		</dependency>
 		<dependency>
 			<groupId>org.bukkit</groupId>
 			<artifactId>bukkit</artifactId>
-			<version>1.8.3-R0.1-SNAPSHOT</version>
+			<version>1.8.6-R0.1-SNAPSHOT</version>
 			<type>jar</type>
 			<scope>provided</scope>
 		</dependency>
